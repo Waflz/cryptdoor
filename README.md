@@ -31,7 +31,7 @@ If you do already have one just add a colon before adding this to the variable l
 6. Add ';C:\Python27\Lib\site-packages\PyInstaller' to the end of your PATH variable
 7. Install pyHook: http://sourceforge.net/projects/pyhook/files/latest/download
 8. Install pywin32: http://sourceforge.net/projects/pywin32/files/pywin32/
-9. Place the socks.py file in the same directory as backdoor.py
+9. Place the socks.py file in the same directory as backdoor.py if you want to use a proxy.
 10. Open a new cmd promt and cd to wherever backdoor.py is.
 
 	pyinstaller -F -w backdoor.py
@@ -56,7 +56,7 @@ host and port refer to the host and port of the listening server.
     	 download file       -  Download a file from remote pwd to localhost.
     	 upload filepath     -  Upload a filepath to remote pwd.
     	 run commands        -  Run a command in the background.
-         wget url            -  Download a file from url to pwd.
+         wget url            -  Download a file from url to remote pwd.
 
 	Windows Only:
     	 persistence         -  Install exe as a system service backdoor.
@@ -72,7 +72,7 @@ Proxies
 
 If you wish to have your backdoor connect back to you through a HTTP/s proxy, there a few things we have to do:
 
-1. Edit the cryptdoor script from line 245-248, and fill in the values for the proxy details.
+1. Edit the cryptdoor script from line 260-262, and fill in the values for the proxy details.
 
 2. Get a DDNS pointed at your IP (proxying does not work without one.)
 
