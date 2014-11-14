@@ -89,7 +89,7 @@ Proxies
 
 If you wish to have your backdoor connect back to you through a HTTP/s proxy, there a few things we have to do:
 
-1. Edit the cryptdoor script from line 267-268, and fill in the values for the proxy details.
+1. Edit the cryptdoor script from line 307-308, and fill in the values for the proxy details.
 
 2. Get a DDNS pointed at your IP (proxying does not work without one.)
 
