@@ -89,9 +89,9 @@ Proxies
 
 If you wish to have your backdoor connect back to you through a HTTP/s proxy, there a few things we have to do:
 
-1. Edit the cryptdoor script from line 307-308, and fill in the values for the proxy details.
+1. Edit the stubs/backdoor.py script from line 245-246, and fill in the values for the proxy details.
 
-2. Get a DDNS pointed at your IP (proxying does not work without one.)
+2. Get a DDNS pointed at your IP (proxying will not work without one).
 
 3. Then generate your backdoor with the -x switch and replace the IP with your DDNS hostname:
 
