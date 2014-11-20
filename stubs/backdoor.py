@@ -264,8 +264,14 @@ if useproxy:
 				pass
 
 else:
-	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	s.connect((host, port))
+	while not pconnect:
+		try:
+			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			s.settimeout(20)
+			s.connect((host, port))
+			pconnect = True
+		except:
+			pass
 
 s.send(success)
 
