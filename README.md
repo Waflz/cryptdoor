@@ -74,6 +74,7 @@ These are the options you have from within the shell:
     	 upload filepath     -  Upload a filepath to remote pwd.
     	 run commands        -  Run a command in the background.
          wget url            -  Download a file from url to remote pwd.
+	 tempsend file       -  Upload a file from remote pwd to tempsend.com
 
 	Windows Only:
     	 persistence         -  Install exe as a system service backdoor.
