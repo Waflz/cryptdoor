@@ -78,19 +78,21 @@ These are the options you have from within the shell:
 
 	Windows Only:
     	 persistence         -  Install exe as a system service backdoor.
+    	 unpersist           -  Remove persistence and exit.
     	 meterpreter ip:port -  Execute a reverse_tcp meterpreter to ip:port.
     	 keyscan             -  Start recording keystrokes.
     	 keydump             -  Dump recorded keystrokes.
     	 keyclear            -  Clear the keystroke buffer.
     	 chromepass          -  Retrieve chrome stored passwords.
     	 bypassuac cmds      -  Run commands as admin.
+    	 proxyupdate file    -  Update proxy list from file.
 
 Proxies
 =========
 
 If you wish to have your backdoor connect back to you through a HTTP/s proxy, there a few things we have to do:
 
-1. Edit the stubs/backdoor.py script from line 245-246, and fill in the values for the proxy details.
+1. Edit the stubs/backdoor.py script from line 312-313, and fill in the values for the proxy details.
 
 2. Get a DDNS pointed at your IP (proxying will not work without one).
 
