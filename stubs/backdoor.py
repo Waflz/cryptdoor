@@ -1,3 +1,4 @@
+***JUNK2***
 def fscreenshot():
 	hwnd = 0
 	hwndDC = win32gui.GetWindowDC(hwnd)
