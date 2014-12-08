@@ -65,6 +65,10 @@ else:
 	serverName = "server.py"
 
 if args.proxy:
+	if args.obfuscate:
+		print ' [X] Obfuscation is not currently compatible with proxies.\n'
+		parser.print_help()
+		exit()
 	proxysetting = 'useproxy = True'
 else:
 	proxysetting = 'useproxy = False'
