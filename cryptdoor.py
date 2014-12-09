@@ -182,7 +182,7 @@ else:
 	downurl = args.customurl
 	dlf = 'stubs/downloader_cust.py'
 
-with open(dlf) as dl:
+with open(dlf, 'rb') as dl:
 	downloaderscript = dl.read().replace('***URL***', downurl)
 with open('tempobfs.py', 'wb') as o:
 	o.write(downloaderscript)
