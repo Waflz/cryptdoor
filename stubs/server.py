@@ -133,8 +133,6 @@ def fhelp():
 	else:
 		return '**n AES-shell options:**n  download file       -  Download a file from remote pwd to localhost.**n  upload filepath     -  Upload a filepath to remote pwd.**n  run commands        -  Run a command in the background.**n  wget url            -  Download a file from url to remote pwd.**n  tempsend file       -  Upload a file from remote pwd to tempsend.com**n'
 
-
-***CODE***
 BLOCK_SIZE, PADDING, cfrom, pwd = 32, '{', ' ', ''
 pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * PADDING
 EncodeAES = lambda c, s: base64.b64encode(c.encrypt(s))
