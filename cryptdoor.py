@@ -55,20 +55,21 @@ if len(sys.argv) == 1:
 	exit()
 
 if not args.customurl and not args.expire:
-	print ' [X] Error: Missing expire or customurl flag.'
+	print ' [X] Error: Missing expire or customurl flag.\n'
 	parser.print_help()
 	exit()
 
 if args.expire:
 	expiredone = False
-	extimes = [['h',3600], ['d',86400], ['w',604800], ['m',2678400]]
+	extimes = [['h',3600, 'hour'], ['d',86400, 'day'], ['w',604800, 'week'], ['m',2678400, 'month']]
 	for e in extimes:
 		if args.expire == e[0]:
 			expire = e[1]
+			expirestr = e[2]
 			expiredone = True
 			break
 	if not expiredone:
-		print ' [X] Error: Missing or invalid expire flag value: ' + args.expire
+		print ' [X] Error: Missing or invalid expire flag value: %s\n' % args.expire
 		parser.print_help()
 		exit()
 
@@ -76,7 +77,7 @@ if args.hostname and args.port:
 	hostname = args.hostname
 	portnumber = args.port
 else:
-	print ' [X] Error: Missing hostname or port flag.'
+	print ' [X] Error: Missing hostname or port flag.\n'
 	parser.print_help()
 	exit()
 
@@ -155,7 +156,7 @@ if not args.customurl:
 		df.write(downpayload)
 	print ' [<] Uploading payload code to tempsend..'
 	downurl = ftempsend('readme.txt')
-	print ' [*] Code uploaded to ' + downurl
+	print ' [*] Code uploaded to %s to expire in 1 %s.' % (downurl,expirestr)
 	os.remove('readme.txt')
 else:
 	with open('code.txt', 'wb') as lf:
