@@ -50,7 +50,6 @@ Usage
                                 Ip or hostname to connect back to.
           -p PORT, --port PORT  Port.
           -o, --obfuscate       Enable Obfuscation of source code.
-          -d, --downloaderstub  Enable download of backdoor source at runtime.
           -a, --persistence     Enable Auto-persistence.
           -x, --proxy           Enable HTTP proxy connect.
           -b BACKDOORNAME, --backdoorname BACKDOORNAME
