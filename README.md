@@ -117,7 +117,7 @@ Obfuscation of the backdoor source code is acheived using:
 
 https://github.com/astrand/pyobfuscate
 
-Remote payload
+Staged payload
 =========
 The backdoor payload can be hosted on tempsend.com or at a custom url and downloaded and exec'ed at runtime by the 
 backdoor.py script.  
