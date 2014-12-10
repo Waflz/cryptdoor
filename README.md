@@ -48,10 +48,12 @@ Usage
           -h, --help            show this help message and exit
           -i HOSTNAME, --hostname HOSTNAME
                                 Ip or hostname to connect back to.
-          -p PORT, --port PORT  Port.
-          -o, --obfuscate       Enable Obfuscation of source code.
+          -p PORT, --port PORT  Port to connect back to.
+          -e EXPIRE, --expire EXPIRE
+                        Payload Life: h=hour, d=day, w=week, m=month
+          -u CUSTOMURL, --customurl CUSTOMURL
+                        Host the generated jpg at this url.
           -a, --persistence     Enable Auto-persistence.
-          -x, --proxy           Enable HTTP proxy connect.
           -b BACKDOORNAME, --backdoorname BACKDOORNAME
                                 Name of backdoor (default backdoor.py).
           -s SERVERNAME, --servername SERVERNAME
@@ -63,9 +65,9 @@ The syntax is:
 
         ./cryptdoor.py -i host -p port
 
-You can add a -a to attempt automatic persistence and obfuscation with -o:
+You can add a -a to attempt automatic persistence:
 
-        ./cryptdoor.py -i host -p port -a -o
+        ./cryptdoor.py -i host -p port -a
 
 host and port refer to the host and port of the listening server (attacker).
 These are the options you have from within the shell:
@@ -89,7 +91,9 @@ These are the options you have from within the shell:
     	 proxyupdate file    -  Update proxy list from file.
 
 Proxies
-=========
+=========  
+
+NOTE: Proxying is temporarily disabled. Will be back soon.
 
 If you wish to have your backdoor connect back to you through a HTTP/s proxy, there a few things we have to do:
 
@@ -120,3 +124,5 @@ backdoor.py script.
 This means the actual backdoor code is not included in the final backdoor.py and is therefore further resistant to 
 analysis.
 The code will be hidden in a jpg that remains valid so it can be viewed.
+The key for decrypting the payload code is kept in the downloader, so if anyone finds it online, they will not be able
+to decrypt it.
