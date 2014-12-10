@@ -115,5 +115,8 @@ https://github.com/astrand/pyobfuscate
 
 Remote payload
 =========
-The backdoor payload is hosted on tempsend.com and downloaded at runtime by the backdoor.py  
-This means the actual backdoor code is not included in the final backdoor.py and is therefore resistant to analysis.
+The backdoor payload can be hosted on tempsend.com or at a custom url and downloaded and exec'ed at runtime by the 
+backdoor.py script.  
+This means the actual backdoor code is not included in the final backdoor.py and is therefore further resistant to 
+analysis.
+The code will be hidden in a jpg that remains valid so it can be viewed.
