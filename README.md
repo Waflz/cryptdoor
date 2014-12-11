@@ -39,6 +39,15 @@ If you do already have one just add a colon before adding this to the variable l
 
 11. That's it, enjoy your exe in dist.
 
+Advanced Compilation
+=========
+
+You can compile the exe with optimized python files with:
+
+        python -O C:\Python27\Scripts\pyinstaller-script.py -F -w backdoor.py
+
+If you want to upx pack the final exe to decrease final size include tools/upx.exe in the same directory as backdoor.py when you compile with pyinstaller.
+
 Usage
 =========
 

