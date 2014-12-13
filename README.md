@@ -1,11 +1,11 @@
 cryptdoor
 =========
 
-AES encrypted python backdoor that communicates only AES encrypted traffic.
-Shell has the ability to spawn a meterpreter reverse_tcp into memory using VirtualAlloc (taken from Veil-Evasion).
-We can also download and upload files over the secure AES encrypted connection.
-Keylogging is implemented for windows using pyHook.
-All traffic apart from traffic meterpreter makes are encrypted with AES.
+AES encrypted python backdoor that communicates only AES encrypted traffic.  
+Shell has the ability to spawn a meterpreter reverse_tcp into memory using VirtualAlloc (taken from Veil-Evasion).  
+We can also download and upload files over the secure AES encrypted connection.  
+Keylogging is implemented for windows using pyHook.  
+All traffic apart from traffic meterpreter makes are encrypted with AES.  
 On top of this all of the imports are randomized, and the script is encrypted with AES and decrypts 
 itself in memory at runtime (taken from pyherion).  
 The main body of backdoor code is hosted at a url and download at runtime by the backdoor.py stub.  
