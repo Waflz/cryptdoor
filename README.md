@@ -7,46 +7,7 @@ We can also download and upload files over the secure AES encrypted connection.
 Keylogging is implemented for windows using pyHook.
 All traffic apart from traffic meterpreter makes are encrypted with AES.
 On top of this all of the imports are randomized, and the script is encrypted with AES and decrypts 
-itself in memory at runtime (taken from pyherion).
-
-Compilation
-=========
-
-The backdoor script can be compiled to a standalone PE executable using pyinstaller on windows.
-
-1. Install python27: https://www.python.org/ftp/python/2.7.8/python-2.7.8.msi
-2. Run this script to install pip: https://bootstrap.pypa.io/get-pip.py
-3. Press Windows Key+Pause, then "Advanced system settings" then "Environment Variables"
-4. You might or not have a "PATH" variable listed there if not add one and write
-
-        "C:\Python27;C:\Python27\Scripts"
-
-If you do already have one just add a colon before adding this to the variable like:
-
-        "C:\oldpath;C:\Python27;C\Python27\Scripts"
-
-5. Open a new cmd terminal and you should be able to:
-
-        pip install pyinstaller pycrypto requests
-
-6. Add ';C:\Python27\Lib\site-packages\PyInstaller' to the end of your PATH variable
-7. Install pyHook: http://sourceforge.net/projects/pyhook/files/latest/download
-8. Install pywin32: http://sourceforge.net/projects/pywin32/files/pywin32/
-9. Place the socks.py file in the same directory as backdoor.py if you want to use a proxy.
-10. Open a new cmd promt and cd to wherever backdoor.py is.
-
-        pyinstaller -F -w backdoor.py
-
-11. That's it, enjoy your exe in dist.
-
-Advanced Compilation
-=========
-
-You can compile the exe with optimized python files with:
-
-        python -O C:\Python27\Scripts\pyinstaller-script.py -F -w backdoor.py
-
-If you want to upx pack the final exe to decrease final size include tools/upx.exe in the same directory as backdoor.py when you compile with pyinstaller.
+itself in memory at runtime (taken from pyherion).  
 
 Usage
 =========
@@ -98,6 +59,45 @@ These are the options you have from within the shell:
     	 chromepass          -  Retrieve chrome stored passwords.
     	 bypassuac cmds      -  Run commands as admin.
     	 proxyupdate file    -  Update proxy list from file.
+
+Compilation
+=========
+
+The backdoor script can be compiled to a standalone PE executable using pyinstaller on windows.
+
+1. Install python27: https://www.python.org/ftp/python/2.7.8/python-2.7.8.msi
+2. Run this script to install pip: https://bootstrap.pypa.io/get-pip.py
+3. Press Windows Key+Pause, then "Advanced system settings" then "Environment Variables"
+4. You might or not have a "PATH" variable listed there if not add one and write
+
+        "C:\Python27;C:\Python27\Scripts"
+
+If you do already have one just add a colon before adding this to the variable like:
+
+        "C:\oldpath;C:\Python27;C\Python27\Scripts"
+
+5. Open a new cmd terminal and you should be able to:
+
+        pip install pyinstaller pycrypto requests
+
+6. Add ';C:\Python27\Lib\site-packages\PyInstaller' to the end of your PATH variable
+7. Install pyHook: http://sourceforge.net/projects/pyhook/files/latest/download
+8. Install pywin32: http://sourceforge.net/projects/pywin32/files/pywin32/
+9. Place the socks.py file in the same directory as backdoor.py if you want to use a proxy.
+10. Open a new cmd promt and cd to wherever backdoor.py is.
+
+        pyinstaller -F -w backdoor.py
+
+11. That's it, enjoy your exe in dist.
+
+Advanced Compilation
+=========
+
+You can compile the exe with optimized python files with:
+
+        python -O C:\Python27\Scripts\pyinstaller-script.py -F -w backdoor.py
+
+If you want to upx pack the final exe to decrease final size include tools/upx.exe in the same directory as backdoor.py when you compile with pyinstaller.
 
 Proxies
 =========  
