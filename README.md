@@ -8,6 +8,8 @@ Keylogging is implemented for windows using pyHook.
 All traffic apart from traffic meterpreter makes are encrypted with AES.
 On top of this all of the imports are randomized, and the script is encrypted with AES and decrypts 
 itself in memory at runtime (taken from pyherion).  
+The main body of backdoor code is hosted at a url and download at runtime by the backdoor.py stub.  
+This means that the actual backdoor code only exists in the victim memory.
 
 Usage
 =========
@@ -39,7 +41,7 @@ You can add a -a to attempt automatic persistence:
 
         ./cryptdoor.py -i host -p port -a
 
-host and port refer to the host and port of the listening server (attacker).
+host and port refer to the host and port of the listening server (attacker).  
 These are the options you have from within the shell:
 
 	AES-shell options:
@@ -131,7 +133,7 @@ Staged payload
 The backdoor payload can be hosted on tempsend.com or at a custom url and downloaded and exec'ed at runtime by the 
 backdoor.py script.  
 This means the actual backdoor code is not included in the final backdoor.py and is therefore further resistant to 
-analysis.
-The code will be hidden in a jpg that remains valid so it can be viewed.
+analysis.  
+The code will be hidden in a jpg that remains valid so it can be viewed.  
 The key for decrypting the payload code is kept in the downloader, so if anyone finds it online, they will not be able
 to decrypt it.
