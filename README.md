@@ -8,8 +8,19 @@ Keylogging is implemented for windows using pyHook.
 All traffic apart from traffic meterpreter makes are encrypted with AES.  
 On top of this all of the imports are randomized, and the script is encrypted with AES and decrypts 
 itself in memory at runtime (taken from pyherion).  
+
+Staged payload
+=========
+
 The main body of backdoor code is hosted at a url and download at runtime by the backdoor.py stub.  
-This means that the actual backdoor code only exists in the victim memory.
+This means that the actual backdoor code only exists in the victim memory.  
+The backdoor payload can be hosted on tempsend.com or at a custom url and downloaded and exec'ed at runtime by the 
+backdoor.py script.  
+This means the actual backdoor code is not included in the final backdoor.py and is therefore further resistant to 
+analysis.  
+The code will be hidden in a jpg that remains valid so it can be viewed.  
+The key for decrypting the payload code is kept in the downloader, so if anyone finds it online, they will not be able
+to decrypt it.
 
 Usage
 =========
@@ -86,7 +97,7 @@ If you do already have one just add a colon before adding this to the variable l
 7. Install pyHook: http://sourceforge.net/projects/pyhook/files/latest/download
 8. Install pywin32: http://sourceforge.net/projects/pywin32/files/pywin32/
 9. Place the socks.py file in the same directory as backdoor.py if you want to use a proxy.
-10. Open a new cmd promt and cd to wherever backdoor.py is.
+10. Open a new cmd terminal and cd to wherever backdoor.py is.
 
         pyinstaller -F -w backdoor.py
 
@@ -127,13 +138,3 @@ Obfuscation
 Obfuscation of the backdoor source code is acheived using:
 
 https://github.com/astrand/pyobfuscate
-
-Staged payload
-=========
-The backdoor payload can be hosted on tempsend.com or at a custom url and downloaded and exec'ed at runtime by the 
-backdoor.py script.  
-This means the actual backdoor code is not included in the final backdoor.py and is therefore further resistant to 
-analysis.  
-The code will be hidden in a jpg that remains valid so it can be viewed.  
-The key for decrypting the payload code is kept in the downloader, so if anyone finds it online, they will not be able
-to decrypt it.
